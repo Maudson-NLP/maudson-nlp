@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[53]:
+# In[2]:
 
 import numpy as np
 import pandas as pd
@@ -12,9 +12,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
 
 
-# In[2]:
+# In[4]:
 
-xl = pd.ExcelFile("Beauty_5.xlsx")
+xl = pd.ExcelFile("./data/Beauty_5.xlsx")
 
 
 # In[112]:
