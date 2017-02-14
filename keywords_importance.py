@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[9]:
 
 import numpy as np
 import pandas as pd
@@ -12,46 +12,46 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.svm import LinearSVC
 
 
-# In[4]:
+# In[10]:
 
 xl = pd.ExcelFile("./data/Beauty_5.xlsx")
 
 
-# In[112]:
+# In[11]:
 
 df = xl.parse()
 df = df.dropna()
 
 
-# In[114]:
+# In[12]:
 
 df.head()
 
 
-# In[115]:
+# In[13]:
 
 x = df.drop(['overall'], axis=1)
 y = df['overall']
 
 # Trying first 1000 examples for now
-x_train, x_test, y_train, y_test = train_test_split(x[0:100000],
-                                                    y[0:100000],
+x_train, x_test, y_train, y_test = train_test_split(x[0:10000],
+                                                    y[0:10000],
                                                     test_size=0.3)
 
 
-# In[116]:
+# In[14]:
 
 def convert_to_numeric(x):
     if type(x) == int:
         return x
     else:
-        return 3
+        return 2
     
 y_train = y_train.apply(convert_to_numeric)
 y_test = y_test.apply(convert_to_numeric)
 
 
-# In[117]:
+# In[49]:
 
 # Train the pipeline
 vectorizer = CountVectorizer(stop_words='english')
@@ -61,13 +61,13 @@ text_pipe = make_pipeline(vectorizer, svc)
 text_pipe.fit(x_train['reviewText"'], np.array(y_train))
 
 
-# In[118]:
+# In[51]:
 
 # Predict some ratings
 text_pipe.score(x_test['reviewText"'], y_test)
 
 
-# In[119]:
+# In[17]:
 
 # Get top words for classes
 def print_top10(vectorizer, clf, class_labels):
@@ -79,15 +79,16 @@ def print_top10(vectorizer, clf, class_labels):
               " ".join(feature_names[j] for j in top10)))
 
 
-# In[120]:
+# In[18]:
 
 print_top10(vectorizer, svc, [0,1,2,3,4])
 
 
-# In[121]:
+# In[31]:
 
 def plot_coefficients(classifier, feature_names, top_features=20):
-    coef = classifier.coef_[0]
+    # Five sets of coefficients correspond to each of the OVR classifiers
+    coef = classifier.coef_[4]
     top_positive_coefficients = np.argsort(coef)[-top_features:]
     top_negative_coefficients = np.argsort(coef)[:top_features]
     top_coefficients = np.hstack([top_negative_coefficients, top_positive_coefficients])
@@ -101,16 +102,16 @@ def plot_coefficients(classifier, feature_names, top_features=20):
     plt.show()
 
 
-# In[122]:
+# In[32]:
 
 plot_coefficients(svc, vectorizer.get_feature_names())
 
 
-# In[101]:
+# In[33]:
 
 print len(vectorizer.vocabulary_)
 print len(vectorizer.get_feature_names())
-print len(svc.coef_[0]) # Why are there 5 sets of coefficients?
+print len(svc.coef_[4])
 
 
 # In[ ]:
