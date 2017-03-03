@@ -1,0 +1,10 @@
+
+import numpy as np
+import pandas as pd
+print(np.__file__)
+
+import nltk
+
+survey_data = pd.read_excel('data/survey_data.xlsx')
+
+
