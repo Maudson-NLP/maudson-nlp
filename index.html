@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Semantic Volume Maximization</title>
+</head>
+<body>
+
+  <input id="the-file" name="file" type="file" >
+
+  <script>
+    document.getElementById('the-file').onchange = upload;
+
+    function upload(){
+        setTimeout(doUpload, 2000);
+    }
+
+    function doUpload(){
+      var fileInput = document.getElementById('the-file');
+      var file = fileInput.files[0];
+      var formData = new FormData();
+      formData.append('file', file);
+
+      var xhr = new XMLHttpRequest();
+      // Add any event handlers here...
+      xhr.open('POST', '/summarize', true);
+      xhr.send(formData);
+    }
+
+  </script>
+
+</body>
+</html>
