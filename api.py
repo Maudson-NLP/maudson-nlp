@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask
 from flask import request
 from summarizer import *
@@ -19,15 +20,15 @@ def hello_world():
         return 'no file provided'
     if file:
         # filename = secure_filename(file.filename)
-        src = os.getcwd()
+        src = os.getcwd() + '/uploaded_data/'
         file.save(os.path.join(src, file.filename))
 
-    summary = summarize(file.filename)
+    columns = request.form['columns'].split('%')
 
-    return summary
-
-
+    summary = summarize(file.filename, columns)
+    return json.dumps(summary)
 
 
 if __name__ == '__main__':
+    # summary = summarize('survey_data.xlsx', ['What is Healthy Skin?', 'How do you know your skin is healthy?'])
     app.run() #host=HOST, port=PORT, debug=debug, threaded=threaded)
