@@ -3,31 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <title>Semantic Volume Maximization</title>
+
+  <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
 
-  <input id="the-file" name="file" type="file" >
+  <input id="the-file" name="file" type="file" />
+  <input id="the-column-names" placeholder="Enter Column Headers separated by '%'"/>
+  <button onclick="doUpload()">Summarize</button>
+  <div id="result"></div>
 
   <script>
-    document.getElementById('the-file').onchange = upload;
-
-    function upload(){
-        setTimeout(doUpload, 2000);
-    }
-
     function doUpload(){
+      $('#result').text('Summarizing...');
       var fileInput = document.getElementById('the-file');
       var file = fileInput.files[0];
       var formData = new FormData();
       formData.append('file', file);
+      var columns = $('#the-column-names');
+      formData.append('columns', columns.val());
 
       var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState == XMLHttpRequest.DONE) {
+            var json = JSON.parse(xhr.responseText);
+
+            var $compiled = $('#summarization--template').tmpl({
+              summaries: json
+            });
+            $('#result').empty().append($compiled);
+          }
+      };
+
       // Add any event handlers here...
       xhr.open('POST', '/summarize', true);
       xhr.send(formData);
     }
-
   </script>
 
+
+  <script id="summarization--template" type="text/x-jquery-tmpl">
+    {{each(i, summary) summaries}}
+      <div class="summary-item">${i}. ${summary}</div>
+    {{/each}}
+  </script>
+
+
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
 </body>
 </html>
