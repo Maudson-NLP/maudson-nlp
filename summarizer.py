@@ -5,7 +5,6 @@ import sklearn
 import numpy as np
 import pandas as pd
 import logging
-
 from pprint import pprint
 
 import scipy.sparse
@@ -14,6 +13,7 @@ import sklearn.metrics.pairwise
 from gensim.models import Doc2Vec
 from collections import defaultdict
 from scipy.sparse import csr_matrix
+from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
@@ -22,22 +22,31 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 
 
-def make_sentences(df):
-    # todo - automate for each column
+def make_sentences(df, columns):
+    '''
+    Concatenate columns of data frame into list of lists of sentences
+    :param df: Pandas DataFrame
+    :return: list of lists of sentences
+    '''
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    textBlobs = []
-    for i in range(2 ,3):
-        if str(df.ix[: ,i].dtype) == 'object':
+    sentence_sets = []
+    for col in columns:
+        if str(df[col].dtype) == 'object':
             # Use a period as most users do not end their answers with periods
             # (Possible source of optimization)
-            textBlob = df.ix[: ,i].str.cat(sep='. ')
+            textBlob = df[col].str.cat(sep='. ')
             tokenized = tokenizer.tokenize(textBlob)
-            textBlobs += tokenized
+            sentence_sets.append(tokenized)
 
-    return np.array(textBlobs)
+    return np.array(sentence_sets)
 
 
 def do_stemming(sentences):
+    '''
+    Stem sentences using Porter stemmer
+    :param sentences: list of sentences to stem
+    :return: list of stemmed sentences
+    '''
     stemmer = PorterStemmer()
 
     stemmed_sentences = []
@@ -52,8 +61,33 @@ def do_stemming(sentences):
     return stemmed_sentences
 
 
+def do_lemmatization(sentences):
+    '''
+    Run NLTK lemmatization on sentences
+    :param sentences: List of sentences
+    :return: List of lemmatized sentences
+    '''
+    wlem = WordNetLemmatizer()
+
+    lemma_sentences = []
+    for sentence in sentences:
+        words = word_tokenize(sentence)
+
+        lemma_sentence = []
+        for w in words:
+            lemma_sentence.append(wlem.lemmatize(w))
+        lemma_sentences.append(' '.join(lemma_sentence))
+
+    return lemma_sentences
+
+
 # Todo - only removes first stopword of bigram
 def remove_stopword_bigrams(sentences):
+    '''
+    Removes bigrams that consist of only stopwords, as suggested by Yogotama et al
+    :param sentences: list of sentences
+    :return: list of sentences with stopword bigrams removed
+    '''
     sw_bigrams_removed = []
     for sentence in sentences:
         bigrams = nltk.bigrams(sentence.split())
@@ -68,10 +102,21 @@ def remove_stopword_bigrams(sentences):
 
 
 def vectorize(sentences):
+    '''
+    Vectorize sentences
+    :param sentences: list of sentences
+    :return: vectorized word counts. N (# sentences) x M (length of dictionary)
+    '''
     return CountVectorizer().fit_transform(sentences)
 
 
 def ortho_proj_vec(vectors, B):
+    '''
+    Find the vector that is furthest from the subspace spanned by the vectors in B
+    :param vectors: List of vectors to search
+    :param B: Set of unit vectors that form the basis of the subspace
+    :return:
+    '''
     print("Calculating vector with largest distance to subspace of {} basis vectors".format(len(B)))
     projs = csr_matrix(vectors.shape, dtype=np.int8) # coo_matrix
 
@@ -91,6 +136,13 @@ def ortho_proj_vec(vectors, B):
 
 
 def sem_vol_max(sentences, vectors, L):
+    '''
+    Perform Semantic Volume Maximization as specified in Yogotama et al.
+    :param sentences: List of original, un-preprocessed sentences
+    :param vectors: np.array of vectorized sentences corresponding to sentences
+    :param L: Limit of number of words to include in summary
+    :return:
+    '''
     S = set()
     B = set()
 
@@ -143,36 +195,49 @@ def sem_vol_max(sentences, vectors, L):
                 break
 
     print("Final sentence count: " + str(len(S)))
-    return S
+    return [str(e) for e in S]
 
 
-def summarize(filename):
-    xl = pd.ExcelFile(filename)
+def summarize(filename, columns, l=100):
+    '''
+    Start summarization task on excel file with columns to summarize
+    :param filename: Name of excel file with columns to summarize
+    :param columns: Titles in first row of spreadsheet for columns to summarize
+    :param l: Max length of summary (in words)
+    :return: Summary string
+    '''
+    data_dir = './uploaded_data/'
+    xl = pd.ExcelFile(data_dir + filename)
     df = xl.parse()
     df = df.dropna()
 
-    L = 90
     delimiter = '\n' + '*' * 30
 
     print(delimiter + ' Raw sentences:')
-    sentences = make_sentences(df)
-    print(sentences[:10])
+    sentence_sets = make_sentences(df, columns)
+    print(sentence_sets[0][:10])
 
-    print(delimiter + ' After stemming:')
-    stemmed = do_stemming(sentences)
-    print(stemmed[:10])
+    summaries = []
+    for sentence_set in sentence_sets:
+        print(delimiter + ' After lemmatization:')
+        lemmatized = do_lemmatization(sentence_set)
+        print(lemmatized[:10])
 
-    print(delimiter + ' After removing stopword bigrams:')
-    sw_bigrams_removed = remove_stopword_bigrams(stemmed)
-    print(sw_bigrams_removed[:2])
+        print(delimiter + ' After removing stopword bigrams:')
+        sw_bigrams_removed = remove_stopword_bigrams(lemmatized)
+        print(sw_bigrams_removed[:2])
 
-    print(delimiter + ' After vectorization:')
-    vectorized = vectorize(sw_bigrams_removed)
-    print(vectorized[:2])
+        print(delimiter + ' After vectorization:')
+        vectorized = vectorize(sw_bigrams_removed)
+        print(vectorized[:2])
 
-    print(delimiter + ' Run Algorithm:')
-    summary = sem_vol_max(sentences, vectorized, L)
+        print(delimiter + ' Run Algorithm:')
+        summary = sem_vol_max(sentence_set, vectorized, l)
 
-    print(delimiter + ' Result:')
-    print(summary)
-    return repr(summary)
+        print(delimiter + ' Result:')
+        print(summary)
+        summaries.append(summary)
+
+    print("Columns summarized: {}".format(len(summaries)))
+    print(summaries)
+    return summaries

@@ -1,0 +1,16 @@
+body {
+    background-color: aliceblue;
+}
+
+#result {
+    margin: 50px;
+    font: "Droid Sans", sans-serif;
+}
+
+.summary-item {
+    margin: 20px auto;
+}
+
+#the-column-names {
+    min-width: 250px;
+}
