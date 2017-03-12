@@ -29,22 +29,27 @@ from nltk.stem.porter import PorterStemmer
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
-# In[2]:
+# In[4]:
 
-np.__file__
-
-
-# In[236]:
-
-xl = pd.ExcelFile("./data/survey_data.xlsx")
+xl = pd.ExcelFile("../data/survey_data.xlsx")
 df = xl.parse()
 df = df.dropna()
 
-# df.ix[:,1]
-# df.shape
-df.head()
 
-# Columns to summarize: 1,2,3,4,5,6
+# In[12]:
+
+help(np)
+
+
+# In[5]:
+
+col = 'What is Healthy Skin?'
+textBlob = df[col].str.cat(sep='. ')
+
+
+# In[9]:
+
+textBlob
 
 
 # In[238]:

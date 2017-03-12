@@ -1,17 +1,13 @@
 import nltk
 import scipy
-import gensim
 import sklearn
 import numpy as np
 import pandas as pd
 import logging
-from pprint import pprint
 
 import scipy.sparse
-from gensim import corpora
+from textblob import TextBlob
 import sklearn.metrics.pairwise
-from gensim.models import Doc2Vec
-from collections import defaultdict
 from scipy.sparse import csr_matrix
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
@@ -20,6 +16,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+DELIMITER = '\n' + '*' * 30
 
 
 def make_sentences(df, columns):
@@ -39,6 +36,14 @@ def make_sentences(df, columns):
             sentence_sets.append(tokenized)
 
     return np.array(sentence_sets)
+
+
+def do_spellcheck(sentences):
+    sentences_spellchecked = []
+    for sentence in sentences:
+        b = TextBlob(sentence)
+        sentences_spellchecked.append(b.correct())
+    return sentences_spellchecked
 
 
 def do_stemming(sentences):
@@ -135,6 +140,36 @@ def ortho_proj_vec(vectors, B):
     return np.argmax(dists)
 
 
+def compute_mean_vector(vectors):
+    c = (1 / vectors.shape[0]) * np.sum(vectors, axis=0)
+    return csr_matrix(c)
+
+
+def compute_primary_basis_vector(vectors, sentences, d, L):
+    '''
+    Find the vector in vectors with furthest distances from the given vector d, while the
+    length of the corresponding sentence from sentences does not overflow the word limit L
+    :param vectors: List of vectorized sentences to search through
+    :param sentences: Corresponding list of sentences
+    :param d: Test vector to compare to each vector in vectors
+    :param L: Max length of word count in sentence
+    :return: Index of vector with largest distance in vectors
+    '''
+    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d)
+    p = np.argmax(dists)
+    # Skip vectors that overflow the word limit
+    total_length = len(sentences[p].split())
+    # Include length of first vector if we arenn't dealing with `d` as the mean vector
+    if type(d) != scipy.sparse.csr.csr_matrix:
+        total_length += len(sentences[d].split())
+
+    while total_length > L:
+        print("Basis vector too long, recalculating...")
+        vectors[p] = np.zeros(vectors[p].shape)
+        p = np.argmax(dists)
+    return p
+
+
 def sem_vol_max(sentences, vectors, L):
     '''
     Perform Semantic Volume Maximization as specified in Yogotama et al.
@@ -147,31 +182,45 @@ def sem_vol_max(sentences, vectors, L):
     B = set()
 
     # Mean vector
-    c = (1 / vectors.shape[0]) * np.sum(vectors, axis=0)
-    c = csr_matrix(c)
+    c = compute_mean_vector(vectors)
 
     # 1st furthest vector -- Will this always just be the longest sentence?
-    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, c)
-    p = np.argmax(dists)
-    print("Sentence furthest from mean: {}".format(sentences[p]))
-    S.add(sentences[p])
+    p = compute_primary_basis_vector(vectors, sentences, c, L)
+    vec_p = vectors[p]
+    sent_p = sentences[p]
+    print("Sentence furthest from mean: {}".format(sent_p))
+    S.add(sent_p)
 
     # 2nd furthest vector
-    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, vectors[p])
-    q = np.argmax(dists)
-    print("Sentence furthest from first: {}".format(sentences[q]))
-    S.add(sentences[q])
+    q = compute_primary_basis_vector(vectors, sentences, vec_p, L)
+    vec_q = vectors[q]
+    sent_q = sentences[q]
+    print("Sentence furthest from the first: {}".format(sent_q))
+    S.add(sent_q)
 
-    b_0 = vectors[q] / scipy.sparse.linalg.norm(vectors[q])
+    b_0 = vec_q / scipy.sparse.linalg.norm(vec_q)
     B.add(b_0)
 
-    total_length = len(sentences[p].split()) + len(sentences[q].split())
+    return sentence_add_loop(vectors, sentences, S, B, L)
+
+
+def sentence_add_loop(vectors, sentences, S, B, L):
+    '''
+    Iteratively add most distance vector in `vectors`, from list of vectors `vectors`, to set B.
+    Add the corresponding sentences from `sentences` to set S.
+    :param vectors: Vectors to search through
+    :param sentences: Corresponding sentences to add to set
+    :param S: Set of sentences to be returned
+    :param B: Set of existing basis vectors of the subspace to be compared to each new vector
+    :param L: Max length of total number of words across all sentences in S
+    :return: List of sentences corresponding to set of vectors in `vectors` that maximally span the subspace of `vectors`
+    '''
+    total_length = sum([len(sent.split()) for sent in S])
     exceeded_length_count = 0
 
     for i in range(0, vectors.shape[0]):
-        print("\n" + "*"* 10)
-
         r = ortho_proj_vec(vectors, B)
+        print(DELIMITER)
         print("Furthest sentence: " + sentences[r])
         print("Total words: {}".format(total_length))
         print("Length of sentence to add: {}".format(len(sentences[r].split())))
@@ -188,7 +237,7 @@ def sem_vol_max(sentences, vectors, L):
         else:
             print("Sentence too long to add to set")
             # Temporary hack to prevent us from choosing this vector again:
-            vectors[r] = np.zeros(vectors[p].shape)
+            vectors[r] = np.zeros(vectors[r].shape)
 
             exceeded_length_count += 1
             if exceeded_length_count >= 15:
@@ -211,30 +260,33 @@ def summarize(filename, columns, l=100):
     df = xl.parse()
     df = df.dropna()
 
-    delimiter = '\n' + '*' * 30
-
-    print(delimiter + ' Raw sentences:')
+    print(DELIMITER + ' Raw sentences:')
     sentence_sets = make_sentences(df, columns)
     print(sentence_sets[0][:10])
 
     summaries = []
     for sentence_set in sentence_sets:
-        print(delimiter + ' After lemmatization:')
+        print(DELIMITER + ' After lemmatization:')
         lemmatized = do_lemmatization(sentence_set)
         print(lemmatized[:10])
 
-        print(delimiter + ' After removing stopword bigrams:')
+        # Todo - very slow as compared to in python...
+        # print(delimiter + ' After spellcheck:')
+        # spellchecked = do_spellcheck(lemmatized)
+        # print(spellchecked[:10])
+
+        print(DELIMITER + ' After removing stopword bigrams:')
         sw_bigrams_removed = remove_stopword_bigrams(lemmatized)
         print(sw_bigrams_removed[:2])
 
-        print(delimiter + ' After vectorization:')
+        print(DELIMITER + ' After vectorization:')
         vectorized = vectorize(sw_bigrams_removed)
         print(vectorized[:2])
 
-        print(delimiter + ' Run Algorithm:')
+        print(DELIMITER + ' Run Algorithm:')
         summary = sem_vol_max(sentence_set, vectorized, l)
 
-        print(delimiter + ' Result:')
+        print(DELIMITER + ' Result:')
         print(summary)
         summaries.append(summary)
 
