@@ -26,10 +26,13 @@ def hello_world():
 
     columns = request.form['columns'].split('%')
     l = int(request.form['l-value'])
+    k = int(request.form['top-k'])
     form_use_bigrams = request.form['use-bigrams']
+    form_use_svd = request.form['use-svd']
     use_bigrams = distutils.util.strtobool(form_use_bigrams)
+    use_svd = distutils.util.strtobool(form_use_svd)
 
-    summary = summarize(file.filename, columns, l, use_bigrams)
+    summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k)
     return json.dumps(summary)
 
 
