@@ -11,6 +11,7 @@
   <input id="the-file" name="file" type="file" />
   <input id="the-column-names" placeholder="Enter Column Headers separated by '%'"/>
   <input id="l-value" placeholder="Enter max length of summary (default 100)"/>
+  <input id="vec-bigram" type="checkbox" />Vectorize with bigrams?
   <button onclick="doUpload()">Summarize</button>
   <div id="result"></div>
 
@@ -25,6 +26,7 @@
       formData.append('columns', columns.val());
       var l_value = $('#l-value');
       formData.append('l-value', l_value.val());
+      formData.append('use-bigrams', $("#vec-bigram").prop("checked"));
 
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
