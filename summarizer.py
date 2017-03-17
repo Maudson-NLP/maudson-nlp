@@ -149,7 +149,6 @@ def ortho_proj_vec(vectors, B):
     for b in B:
         iteration += 1
         # print("Starting with basis vector {} of {}".format(iteration, len(B)))
-
         p_i = np.multiply(vectors.dot(b.T), b)
         projs += p_i
 
@@ -179,9 +178,7 @@ def compute_primary_basis_vector(vectors, sentences, d, L):
     p = np.argmax(dists)
     # Skip vectors that overflow the word limit
     total_length = len(sentences[p].split())
-    # Include length of first vector if we aren't dealing with `d` as the mean vector
-    if type(d) != scipy.sparse.csr.csr_matrix:
-        total_length += len(sentences[d].split())
+    # Include length of first vector if we aren't dealing with `d` as the mean vector. Todo
 
     while total_length > L:
         print("Basis vector too long, recalculating...")
@@ -276,13 +273,15 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
-def summarize(filename, columns, l=100, use_bigrams=False):
+def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100):
     """
     Start summarization task on excel file with columns to summarize
-    :param filename: Name of excel file with columns to summarize
-    :param columns: Titles in first row of spreadsheet for columns to summarize
-    :param l: Max length of summary (in words)
-    :param use_bigrams: Boolean indicating whether to summarize based on word counts or bigrams
+    :param filename: String - Name of excel file with columns to summarize
+    :param columns: List<String> - Titles in first row of spreadsheet for columns to summarize
+    :param l: Integer - Max length of summary (in words)
+    :param use_bigrams: Boolean - Whether to summarize based on word counts or bigrams
+    :param use_svd: Boolean - Whether to summarize based on top k word concepts
+    :param k: Integer - Number of top word concepts to incorporate
     :return: List of summary strings
     """
     data_dir = './uploaded_data/'
@@ -318,6 +317,12 @@ def summarize(filename, columns, l=100, use_bigrams=False):
             print(DELIMITER + 'After vectorization (using bigrams):')
             vectorized = vectorize(sw_bigrams_removed)
             print(vectorized[:2])
+
+        if use_svd:
+            vectorized = vectorized.asfptype()
+            U, s, V = scipy.sparse.linalg.svds(vectorized, k=k)
+            print(U.shape, s.shape, V.shape)
+            vectorized = csr_matrix(U)
 
         print(DELIMITER + 'Run Algorithm:')
         summary = sem_vol_max(sentence_set, vectorized, l)

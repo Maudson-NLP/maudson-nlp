@@ -9,9 +9,11 @@
 <body>
 
   <input id="the-file" name="file" type="file" />
-  <input id="the-column-names" placeholder="Enter Column Headers separated by '%'"/>
-  <input id="l-value" placeholder="Enter max length of summary (default 100)"/>
+  <input id="the-column-names" placeholder="Enter Column Headers separated by '%'" />
+  <input id="l-value" type="number" value="100" placeholder="Enter max length of summary (default 100)" />
   <input id="vec-bigram" type="checkbox" />Vectorize with bigrams?
+  <input id="svd" type="checkbox" />Use SVD?
+  <input id="top-k" type="number" value="100" placeholder="Top k concepts to use" />
   <button onclick="doUpload()">Summarize</button>
   <div id="result"></div>
 
@@ -22,11 +24,11 @@
       var file = fileInput.files[0];
       var formData = new FormData();
       formData.append('file', file);
-      var columns = $('#the-column-names');
-      formData.append('columns', columns.val());
-      var l_value = $('#l-value');
-      formData.append('l-value', l_value.val());
+      formData.append('columns', $('#the-column-names').val());
+      formData.append('l-value', $('#l-value').val());
       formData.append('use-bigrams', $("#vec-bigram").prop("checked"));
+      formData.append('use-svd', $("#svd").prop("checked"));
+      formData.append('top-k', $("#top-k").val());
 
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
@@ -46,15 +48,14 @@
     }
   </script>
 
-
   <script id="summarization--template" type="text/x-jquery-tmpl">
     {{each(i, summary) summaries}}
       <div class="summary-item">${i + 1}. ${summary}</div>
     {{/each}}
   </script>
 
-
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+
 </body>
 </html>
