@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask
 from flask import request
-from summarizer import *
+from summarizer import summarize
 
 
 app = Flask(__name__, static_url_path='', static_folder='.')
@@ -24,8 +24,10 @@ def hello_world():
         file.save(os.path.join(src, file.filename))
 
     columns = request.form['columns'].split('%')
+    print(str(request.form['l-value'].split()))
+    l = int(request.form['l-value'])
 
-    summary = summarize(file.filename, columns)
+    summary = summarize(file.filename, columns, l)
     return json.dumps(summary)
 
 
