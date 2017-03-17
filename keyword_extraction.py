@@ -27,9 +27,10 @@ def extract_keyphrases(filename, lgt = 10, min_char_length=5, max_words_length=3
     '''
     rake_object = rake.Rake(stoppath, min_char_length, max_words_length, min_keyword_frequency)
     
-    keywords = {qst_clean[k]: rake_object.run(srv_concat[k])[:lgt] for k in range(len(qst_clean))}
+    keyphrases = {qst_clean[k]: rake_object.run(srv_concat[k])[:lgt] for k in range(len(qst_clean))}
+    keyphrases = {qst:[(kw, "%.2f" % ct) for (kw,ct) in lst] for (qst,lst) in keyphrases.iteritems()}
     
-    return keywords
+    return keyphrases
 
 
 

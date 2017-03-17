@@ -35,7 +35,8 @@ def hello_world():
 
 @app.route('/keyphrases', methods=['GET', 'POST'])
 def return_keyphrases():
-
+    
+    print request.files
     if 'file-keyphrase' not in request.files:
         return 'no file provided'
     file = request.files['file-keyphrase']
@@ -47,8 +48,11 @@ def return_keyphrases():
         # filename = secure_filename(file.filename)
         src = os.getcwd() + '/uploaded_data/'
         file.save(os.path.join(src, file.filename))
-
-    keyphrases = kp.extract_keyphrases(file.filename)
+    if 'nb-keyphrases' not in request.files:
+        nb_kp = 10
+    else:
+        nb_kp = request.files['nb-keyphrases']
+    keyphrases = kp.extract_keyphrases('uploaded_data/'+file.filename, nb_kp)
     
     return json.dumps(keyphrases)
 
