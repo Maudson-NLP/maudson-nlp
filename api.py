@@ -1,5 +1,6 @@
 import os
 import json
+import distutils
 from flask import Flask
 from flask import request
 from summarizer import summarize
@@ -24,10 +25,11 @@ def hello_world():
         file.save(os.path.join(src, file.filename))
 
     columns = request.form['columns'].split('%')
-    print(str(request.form['l-value'].split()))
     l = int(request.form['l-value'])
+    form_use_bigrams = request.form['use-bigrams']
+    use_bigrams = distutils.util.strtobool(form_use_bigrams)
 
-    summary = summarize(file.filename, columns, l)
+    summary = summarize(file.filename, columns, l, use_bigrams)
     return json.dumps(summary)
 
 
