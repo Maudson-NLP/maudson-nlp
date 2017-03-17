@@ -1,61 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Semantic Volume Maximization</title>
+    <head>
+        <meta charset="UTF-8">
+            <title>Unilvever - NLP Project</title>
+            
+            <link rel="stylesheet" href="styles/styles.css">
+    </head>
+    <body>
+        
+        <div>Columbia DSI - Unilever - NLP Project</div><br>
+        
+        <div>Summarization</div><br>
 
-  <link rel="stylesheet" href="styles/styles.css">
-</head>
-<body>
+        <input id="the-file" name="file" type="file" />
+        <input id="the-column-names" placeholder="Enter Column Headers separated by '%'" />
+        <input id="l-value" type="number" value="100" placeholder="Enter max length of summary (default 100)" />
+        <input id="vec-bigram" type="checkbox" />Vectorize with bigrams?
+        <input id="svd" type="checkbox" />Use SVD?
+        <input id="top-k" type="number" value="100" placeholder="Top k concepts to use" />
+        <button onclick="doUpload()">Summarize</button>
+        <div id="result"></div>
+        
+        <div>Keyphrase extraction</div><br>
+        
+        <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
+        <input id="nb-keyphrases" placeholder="How many keyphrases per question?"/><br>
+        
+        <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
+        <div id="result_keyphrase"></div>
+        
+        <script>
+        function doUpload(){
+            $('#result').text('Summarizing...');
+            var fileInput = document.getElementById('the-file');
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('columns', $('#the-column-names').val());
+            formData.append('l-value', $('#l-value').val());
+            formData.append('use-bigrams', $("#vec-bigram").prop("checked"));
+            formData.append('use-svd', $("#svd").prop("checked"));
+            formData.append('top-k', $("#top-k").val());
 
-  <input id="the-file" name="file" type="file" />
-  <input id="the-column-names" placeholder="Enter Column Headers separated by '%'" />
-  <input id="l-value" type="number" value="100" placeholder="Enter max length of summary (default 100)" />
-  <input id="vec-bigram" type="checkbox" />Vectorize with bigrams?
-  <input id="svd" type="checkbox" />Use SVD?
-  <input id="top-k" type="number" value="100" placeholder="Top k concepts to use" />
-  <button onclick="doUpload()">Summarize</button>
-  <div id="result"></div>
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                  var json = JSON.parse(xhr.responseText);
 
-  <script>
-    function doUpload(){
-      $('#result').text('Summarizing...');
-      var fileInput = document.getElementById('the-file');
-      var file = fileInput.files[0];
-      var formData = new FormData();
-      formData.append('file', file);
-      formData.append('columns', $('#the-column-names').val());
-      formData.append('l-value', $('#l-value').val());
-      formData.append('use-bigrams', $("#vec-bigram").prop("checked"));
-      formData.append('use-svd', $("#svd").prop("checked"));
-      formData.append('top-k', $("#top-k").val());
+                  var $compiled = $('#summarization--template').tmpl({
+                    summaries: json
+                  });
+                  $('#result').empty().append($compiled);
+                }
+            };
 
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState == XMLHttpRequest.DONE) {
-            var json = JSON.parse(xhr.responseText);
+            // Add any event handlers here...
+            xhr.open('POST', '/summarize', true);
+            xhr.send(formData);
+        }
+        
+        function doUpload_keyphrase(){
+            $('#result_keyphrase').text('Extracting keyphrases...');
+            var fileInput = document.getElementById('the-file-keyphrase');
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('file-keyphrase', file);
+            var nb_kp = $('#nb-keyphrases');
+            formData.append('nb-keyphrases', nb_kp.val());
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                    var json = JSON.parse(xhr.responseText);
+                    
+                    var $compiled = $('#keyphrases--template').tmpl({
+                                                                   keyphrases: json
+                                                                   });
+                                                                   $('#result_keyphrase').empty().append($compiled);
+                }
+            };
+            
+            // Add any event handlers here...
+            xhr.open('POST', '/keyphrases', true);
+            xhr.send(formData);
+        }
+        
+        </script>
+        
+        
+        <script id="summarization--template" type="text/x-jquery-tmpl">
+            {{each(i, summary) summaries}}
+            <div class="summary-item">${i}. ${summary}</div>
+            {{/each}}
+        </script>
 
-            var $compiled = $('#summarization--template').tmpl({
-              summaries: json
-            });
-            $('#result').empty().append($compiled);
-          }
-      };
+        <script id="keyphrases--template" type="text/x-jquery-tmpl">
+            {{each(qst, lst) keyphrases}}
+                <div> ${qst} </div><br>
+                {{each(i, el) lst}}
+                <div>${el[0]}: ${el[1]}</div>
+                    {{/each}}
+                <br>
+            {{/each}}
+        </script>
 
-      // Add any event handlers here...
-      xhr.open('POST', '/summarize', true);
-      xhr.send(formData);
-    }
-  </script>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
 
-  <script id="summarization--template" type="text/x-jquery-tmpl">
-    {{each(i, summary) summaries}}
-      <div class="summary-item">${i + 1}. ${summary}</div>
-    {{/each}}
-  </script>
+    </body>
 
-  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-  <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
-
-</body>
 </html>
