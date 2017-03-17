@@ -12,15 +12,40 @@
         
         <div>Summarization</div><br>
 
-        <input id="the-file" name="file" type="file" />
-        <input id="the-column-names" placeholder="Enter Column Headers separated by '%'" />
-        <input id="l-value" type="number" value="100" placeholder="Enter max length of summary (default 100)" />
-        <input id="vec-bigram" type="checkbox" />Vectorize with bigrams?
-        <input id="svd" type="checkbox" />Use SVD?
-        <input id="top-k" type="number" value="100" placeholder="Top k concepts to use" />
-        <button onclick="doUpload()">Summarize</button>
-        <div id="result"></div>
-        
+        <div id="summarization-upload">
+            <input id="the-file" name="file" type="file" />
+
+            <div class="summarization-upload__input">
+                Column Headers to summarize, separated by "%":
+                <input id="the-column-names" />
+            </div>
+
+            <div class="summarization-upload__input">
+                Max summary length (default 100):
+                <input id="l-value" type="number" value="100" />
+            </div>
+
+            <div class="summarization-upload__input">
+                Vectorize with bigrams?
+                <input id="vec-bigram" type="checkbox" />
+            </div>
+
+            <div class="summarization-upload__input">
+                Use SVD?
+                <input id="svd" type="checkbox" />
+            </div>
+
+            <div class="summarization-upload__input">
+                Top k concepts to use:
+                <input id="top-k" type="number" value="100" />
+            </div>
+
+            <button onclick="doUpload()">Summarize</button>
+        </div>
+
+        <div id="summarization-result"></div>
+
+
         <div>Keyphrase extraction</div><br>
         
         <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
@@ -31,10 +56,12 @@
         
         <script>
         function doUpload(){
-            $('#result').text('Summarizing...');
+            $('#summarization-result').text('Summarizing...');
+
             var fileInput = document.getElementById('the-file');
             var file = fileInput.files[0];
             var formData = new FormData();
+
             formData.append('file', file);
             formData.append('columns', $('#the-column-names').val());
             formData.append('l-value', $('#l-value').val());
@@ -50,7 +77,7 @@
                   var $compiled = $('#summarization--template').tmpl({
                     summaries: json
                   });
-                  $('#result').empty().append($compiled);
+                  $('#summarization-result').empty().append($compiled);
                 }
             };
 
@@ -90,7 +117,7 @@
         
         <script id="summarization--template" type="text/x-jquery-tmpl">
             {{each(i, summary) summaries}}
-            <div class="summary-item">${i}. ${summary}</div>
+                <div class="summary-item">${i + 1}. ${summary}</div>
             {{/each}}
         </script>
 

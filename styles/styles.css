@@ -1,17 +1,33 @@
 body {
     background-color: aliceblue;
+    font-family: "Arial", "fantasy";
 }
 
-#result {
-    margin: 50px;
-    font: "Droid Sans", sans-serif;
+
+#summarization-upload {
+    display: inline-block;
+    width: 30%;
+    margin-bottom: 40px;
 }
 
-.summary-item {
-    margin: 20px auto;
+.summarization-upload__input {
+    margin: 10px 0;
 }
 
 #the-column-names,
 #l-value {
     min-width: 250px;
+}
+
+#result {
+    margin: 50px;
+}
+
+#summarization-result {
+    display: inline-block;
+    width: 50%;
+}
+
+.summary-item {
+    margin: 20px auto;
 }
