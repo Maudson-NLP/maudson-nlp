@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-            <title>Semantic Volume Maximization</title>
+            <title>Unilvever - NLP Project</title>
             
             <link rel="stylesheet" href="styles/styles.css">
     </head>
@@ -19,7 +19,9 @@
         
         <div>Keyphrase extraction</div><br>
         
-        <input id="the-file-keyphrase" name="file-keyphrase" type="file" />
+        <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
+        <input id="nb-keyphrases" placeholder="How many keyphrases per question?"/><br>
+        
         <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
         <div id="result_keyphrase"></div>
         
@@ -53,14 +55,16 @@
             var file = fileInput.files[0];
             var formData = new FormData();
             formData.append('file-keyphrase', file);
+            var nb_kp = $('#nb-keyphrases');
+            formData.append('nb-keyphrases', nb_kp.val());
             
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE) {
                     var json = JSON.parse(xhr.responseText);
                     
-                    var $compiled = $('#summarize--template').tmpl({
-                                                                   summaries: json
+                    var $compiled = $('#keyphrases--template').tmpl({
+                                                                   keyphrases: json
                                                                    });
                                                                    $('#result_keyphrase').empty().append($compiled);
                 }
@@ -78,9 +82,19 @@
             {{each(i, summary) summaries}}
             <div class="summary-item">${i}. ${summary}</div>
             {{/each}}
-            </script>
-        
-        
+        </script>
+
+        <script id="keyphrases--template" type="text/x-jquery-tmpl">
+            {{each(qst, lst) keyphrases}}
+                <div> ${qst} </div><br>
+                {{each(i, el) lst}}
+                <div>${el[0]}: ${el[1]}</div>
+                    {{/each}}
+                <br>
+            {{/each}}
+        </script>
+
+
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
         <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
     </body>
