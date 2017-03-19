@@ -12,13 +12,10 @@ app = Flask(__name__, static_url_path='', static_folder='.')
 
 
 @app.route('/summarize', methods=['GET', 'POST'])
-def hello_world():
-
+def summarize_route():
     if 'file' not in request.files:
         return 'no file provided'
     file = request.files['file']
-    # if user does not select file, browser also
-    # submit a empty part without filename
     if file.filename == '':
         return 'no file provided'
     if file:
@@ -31,10 +28,12 @@ def hello_world():
     k = int(request.form['top-k'])
     form_use_bigrams = request.form['use-bigrams']
     form_use_svd = request.form['use-svd']
+    form_use_noun_phrases = request.form['use-noun-phrases']
     use_bigrams = distutils.util.strtobool(form_use_bigrams)
     use_svd = distutils.util.strtobool(form_use_svd)
+    use_noun_phrases = distutils.util.strtobool(form_use_noun_phrases)
+    summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k, use_noun_phrases=use_noun_phrases)
 
-    summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k)
     return json.dumps(summary)
 
 
