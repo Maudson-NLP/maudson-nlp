@@ -3,11 +3,15 @@ body {
     font-family: "Arial", "fantasy";
 }
 
+#summarization__container {
+    background: linen;
+}
 
 #summarization-upload {
     display: inline-block;
     width: 30%;
     margin-bottom: 40px;
+    vertical-align: top;
 }
 
 .summarization-upload__input {
@@ -30,4 +34,15 @@ body {
 
 .summary-item {
     margin: 20px auto;
+}
+
+.summary-item__detail {
+    margin: 10px auto;
+}
+
+.summary-item__noun-phrase {
+    display: inline-block;
+    border: 1px solid black;
+    margin: 5px 0;
+    padding: 10px;
 }

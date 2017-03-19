@@ -1,138 +1,17 @@
-import nltk
 import scipy
 import logging
 import sklearn
 import numpy as np
 import pandas as pd
-
 import scipy.sparse
-from textblob import TextBlob
 import sklearn.metrics.pairwise
 from scipy.sparse import csr_matrix
-from nltk.stem import WordNetLemmatizer
-from nltk.stem.porter import PorterStemmer
-from nltk.tokenize import word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction import FeatureHasher
+from preprocessing import *
 
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 DELIMITER = '\n' + '*' * 30 + ' '
-
-
-def make_sentences(df, columns):
-    """
-    Concatenate columns of data frame into list of lists of sentences
-    :param df: Pandas DataFrame
-    :param columns: list of strings of columns to convert to documents
-    :return: list of lists of sentences
-    """
-    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    # Strip whitespace from columns - todo: just use indices instead?
-    df.columns = [col.strip() for col in df.columns]
-    sentence_sets = []
-    for col in columns:
-        if str(df[col].dtype) == 'object':
-            # Use a period as most users do not end their answers with periods
-            # (Possible source of optimization)
-            text_blob = df[col].str.cat(sep='. ')
-            tokenized = tokenizer.tokenize(text_blob)
-            sentence_sets.append(tokenized)
-
-    return np.array(sentence_sets)
-
-
-def do_spellcheck(sentences):
-    sentences_spellchecked = []
-    for sentence in sentences:
-        b = TextBlob(sentence)
-        sentences_spellchecked.append(b.correct())
-    return sentences_spellchecked
-
-
-def do_stemming(sentences):
-    """
-    Stem sentences using Porter stemmer
-    :param sentences: list of sentences to stem
-    :return: list of stemmed sentences
-    """
-    stemmer = PorterStemmer()
-
-    stemmed_sentences = []
-    for sentence in sentences:
-        words = word_tokenize(sentence)
-
-        stemmed_sentence = []
-        for w in words:
-            stemmed_sentence.append(stemmer.stem(w))
-        stemmed_sentences.append(' '.join(stemmed_sentence))
-
-    return stemmed_sentences
-
-
-def do_lemmatization(sentences):
-    """
-    Run NLTK lemmatization on sentences
-    :param sentences: List of sentences
-    :return: List of lemmatized sentences
-    """
-    wlem = WordNetLemmatizer()
-
-    lemma_sentences = []
-    for sentence in sentences:
-        words = word_tokenize(sentence)
-
-        lemma_sentence = []
-        for w in words:
-            lemma_sentence.append(wlem.lemmatize(w))
-        lemma_sentences.append(' '.join(lemma_sentence))
-
-    return lemma_sentences
-
-
-# Todo - only removes first stopword of bigram
-def remove_stopword_bigrams(sentences):
-    """
-    Removes bigrams that consist of only stopwords, as suggested by Yogotama et al
-    :param sentences: list of sentences
-    :return: list of sentences with stopword bigrams removed
-    """
-    sw_bigrams_removed = []
-    for sentence in sentences:
-        bigrams = nltk.bigrams(sentence.split())
-        stopwords = nltk.corpus.stopwords.words('english')
-
-        filtered = [tup for tup in bigrams if not [True for wrd in tup if wrd in stopwords].count(True) == 2]
-        # Join back into sentence:
-        joined = " ".join("%s" % tup[0] for tup in filtered)
-        sw_bigrams_removed.append(joined)
-
-    return sw_bigrams_removed
-
-
-def vectorize(sentences):
-    """
-    Vectorize sentences using plain sklearn.feature_extraction.CountVectorizer.
-    Represents the corpus as a matrix of sentences by word counts.
-    :param sentences: list of sentences
-    :return: scipy.sparse.coo_matrix - vectorized word counts. N (# sentences) x M (length of vocabulary)
-    """
-    vectorizer = CountVectorizer().fit(sentences)
-    return vectorizer.transform(sentences)
-
-
-def vectorize_bigrams(sentences):
-    """
-    Vectorize sentences using sklearn.feature_extraction.FeatureHasher.
-    Represents the corpus as a matrix of sentences by unique bigram count.
-    :param sentences:
-    :return:
-    """
-    fh = FeatureHasher(input_type='string')
-    bigrams = [nltk.bigrams(sentence.split()) for sentence in sentences]
-    vectorized = fh.transform(((' '.join(x) for x in sample) for sample in bigrams))
-    return vectorized
 
 
 def ortho_proj_vec(vectors, B):
@@ -273,7 +152,7 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
-def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100):
+def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100, use_noun_phrases=False):
     """
     Start summarization task on excel file with columns to summarize
     :param filename: String - Name of excel file with columns to summarize
@@ -294,6 +173,7 @@ def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100)
     print(sentence_sets[0][:10])
 
     summaries = []
+    # Now we iterate over sentence groups for each column and summarize each
     for sentence_set in sentence_sets:
         print(DELIMITER + 'After lemmatization:')
         lemmatized = do_lemmatization(sentence_set)
@@ -319,9 +199,10 @@ def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100)
             print(vectorized[:2])
 
         if use_svd:
+            print(DELIMITER + 'After SVD:')
             vectorized = vectorized.asfptype()
             U, s, V = scipy.sparse.linalg.svds(vectorized, k=k)
-            print(U.shape, s.shape, V.shape)
+            print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
             vectorized = csr_matrix(U)
 
         print(DELIMITER + 'Run Algorithm:')
@@ -329,7 +210,12 @@ def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100)
 
         print(DELIMITER + 'Result:')
         print(summary)
-        summaries.append(summary)
+
+        # Optionally include a list of noun phrases
+        if use_noun_phrases:
+            summaries.append((summary, extract_noun_phrases(sentence_set)))
+        else:
+            summaries.append((summary, []))
 
     print("Columns summarized: {}".format(len(summaries)))
     return summaries
