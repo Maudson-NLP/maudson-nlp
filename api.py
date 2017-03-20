@@ -86,6 +86,7 @@ if __name__ == '__main__':
     if os.environ.get('HEROKU'):
         nltk.download('wordnet')
         nltk.download('punkt')
+        nltk.download('stopwords')
 
     env_port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=env_port, debug=True)
