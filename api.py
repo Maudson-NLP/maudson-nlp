@@ -30,6 +30,9 @@ def summarize_route():
     form_use_svd = request.form['use-svd']
     form_use_noun_phrases = request.form['use-noun-phrases']
     use_bigrams = distutils.util.strtobool(form_use_bigrams)
+    import sys
+    print(sys.version_info)
+    print(help(distutils))
     use_svd = distutils.util.strtobool(form_use_svd)
     use_noun_phrases = distutils.util.strtobool(form_use_noun_phrases)
     summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k, use_noun_phrases=use_noun_phrases)
