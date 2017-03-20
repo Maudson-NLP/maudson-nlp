@@ -151,21 +151,35 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
-def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100, use_noun_phrases=False):
+def summarize(data,
+              columns,
+              l=100,
+              use_bigrams=False,
+              use_svd=False,
+              k=100,
+              use_noun_phrases=False,
+              split_longer_sentences=False,
+              to_split_length=50):
     """
     Start summarization task on excel file with columns to summarize
-    :param filename: String - Name of excel file with columns to summarize
+    :param data: String - Name of excel file with columns to summarize
+        or pandas.DataFrame - DataFrame to summarize by column
     :param columns: List<String> - Titles in first row of spreadsheet for columns to summarize
     :param l: Integer - Max length of summary (in words)
     :param use_bigrams: Boolean - Whether to summarize based on word counts or bigrams
     :param use_svd: Boolean - Whether to summarize based on top k word concepts
     :param k: Integer - Number of top word concepts to incorporate
+    :param split_long_sentences: Boolean - whether to split longer sentences into shorter ones to prevent bias in distance calculation
+    :param to_split_length: Integer - Length above which to split sentences
     :return: List of summary strings
     """
-    data_dir = './uploaded_data/'
-    xl = pd.ExcelFile(data_dir + filename)
-    df = xl.parse()
-    df = df.dropna()
+    if type(data) == str or type(data) == unicode:
+        data_dir = './uploaded_data/'
+        xl = pd.ExcelFile(data_dir + data)
+        df = xl.parse()
+        df = df.dropna()
+    else:
+        df = data
 
     print(DELIMITER + 'Raw sentences:')
     sentence_sets = make_sentences(df, columns)
@@ -177,6 +191,11 @@ def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100,
         print(DELIMITER + 'After lemmatization:')
         lemmatized = do_lemmatization(sentence_set)
         print(lemmatized[:10])
+
+        if split_longer_sentences:
+            print(DELIMITER + 'After sentence splitting:')
+            lemmatized = split_long_sentences(lemmatized, to_split_length)
+            print(lemmatized[:10])
 
         # Todo - very slow as compared to in python...
         # print(delimiter + ' After spellcheck:')
@@ -205,7 +224,11 @@ def summarize(filename, columns, l=100, use_bigrams=False, use_svd=False, k=100,
             vectorized = csr_matrix(U)
 
         print(DELIMITER + 'Run Algorithm:')
-        summary = sem_vol_max(sentence_set, vectorized, l)
+        # todo - this is confusing, better names for lemmatized / sentence_set
+        if split_longer_sentences:
+            summary = sem_vol_max(lemmatized, vectorized, l)
+        else:
+            summary = sem_vol_max(sentence_set, vectorized, l)
 
         print(DELIMITER + 'Result:')
         print(summary)

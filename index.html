@@ -32,8 +32,13 @@
                 </div>
 
                 <div>
-                    Split on commas / conjunctions?
-                    <input id="delim-split" type="checkbox" />
+                    Split longer sentences?
+                    <input id="split-longer-sentences" type="checkbox" />
+                </div>
+
+                <div class="summarization-upload__input">
+                    Number of words at which to split:
+                    <input id="to-split-length" type="number" value="50" />
                 </div>
 
                 <div class="summarization-upload__input">
@@ -82,6 +87,8 @@
             formData.append('use-svd', $("#svd").prop("checked"));
             formData.append('top-k', $("#top-k").val());
             formData.append('use-noun-phrases', $("#noun-phrases").prop("checked"));
+            formData.append('split-longer-sentences', $("#split-longer-sentences").prop("checked"));
+            formData.append('to-split-length', $("#to-split-length").val());
 //            formData.append('top-k', $("#top-k").val());
 
             var xhr = new XMLHttpRequest();
