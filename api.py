@@ -1,4 +1,5 @@
 import os
+import nltk
 import json
 from flask import Flask
 from flask import request
@@ -81,5 +82,9 @@ def strtobool (val):
 
 
 if __name__ == '__main__':
+    # Install nltk english stopwords
+    if os.environ.get("HEROKU"):
+        nltk.download()
+
     env_port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=env_port, debug=True)
