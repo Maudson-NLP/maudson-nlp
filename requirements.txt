@@ -10,3 +10,4 @@ textacy==0.3.3
 textblob==0.11.1
 ftfy==4.4.1
 cffi==1.2.1
+xlrd==1.0.0
