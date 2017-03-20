@@ -40,7 +40,6 @@ def summarize_route():
     use_svd = strtobool(form_use_svd)
     use_noun_phrases = strtobool(form_use_noun_phrases)
     split_longer_sentences = strtobool(form_split_longer_sentences)
-    split_length = strtobool(form_split_length)
 
     summary = summarize(
         data=file.filename, columns=columns,
@@ -48,7 +47,7 @@ def summarize_route():
         use_bigrams=use_bigrams,
         use_svd=use_svd, k=k,
         use_noun_phrases=use_noun_phrases,
-        split_longer_sentences=split_longer_sentences, to_split_length=split_length
+        split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length)
     )
 
     return json.dumps(summary)
