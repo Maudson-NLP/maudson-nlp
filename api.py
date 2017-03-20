@@ -1,6 +1,5 @@
 import os
 import json
-import distutils
 from flask import Flask
 from flask import request
 from summarizer import summarize
@@ -30,13 +29,9 @@ def summarize_route():
     form_use_svd = request.form['use-svd']
     form_use_noun_phrases = request.form['use-noun-phrases']
 
-    import sys
-    print(sys.version_info)
-    print(help(distutils))
-
-    use_bigrams = distutils.util.strtobool(form_use_bigrams)
-    use_svd = distutils.util.strtobool(form_use_svd)
-    use_noun_phrases = distutils.util.strtobool(form_use_noun_phrases)
+    use_bigrams = strtobool(form_use_bigrams)
+    use_svd = strtobool(form_use_svd)
+    use_noun_phrases = strtobool(form_use_noun_phrases)
     summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k, use_noun_phrases=use_noun_phrases)
 
     return json.dumps(summary)
@@ -65,6 +60,23 @@ def return_keyphrases():
     keyphrases = kp.extract_keyphrases('uploaded_data/'+file.filename, nb_kp)
     
     return json.dumps(keyphrases)
+
+
+def strtobool (val):
+    """
+    Copied from https://github.com/python-git/python/blob/master/Lib/distutils/util.py
+    Convert a string representation of truth to true (1) or false (0).
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
+    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = str.lower(val)
+    if val in ('y', 'yes', 't', 'true', 'on', '1'):
+        return 1
+    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
+        return 0
+    else:
+        raise(ValueError, "invalid truth value %r" % (val,))
 
 
 
