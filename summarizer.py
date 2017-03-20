@@ -38,7 +38,7 @@ def ortho_proj_vec(vectors, B):
 
 
 def compute_mean_vector(vectors):
-    c = (1 / vectors.shape[0]) * np.sum(vectors, axis=0)
+    c = (1 / vectors.shape[0]) * np.sum(vectors, axis=0) #np.mean...
     return csr_matrix(c)
 
 
@@ -52,7 +52,7 @@ def compute_primary_basis_vector(vectors, sentences, d, L):
     :param L: Max length of word count in sentence
     :return: Index of vector with largest distance in vectors
     """
-    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d)
+    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d) # should be proj_b0^ui ?
     p = np.argmax(dists)
     # Skip vectors that overflow the word limit
     total_length = len(sentences[p].split())

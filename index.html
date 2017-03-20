@@ -91,18 +91,24 @@
             formData.append('use-noun-phrases', $("#noun-phrases").prop("checked"));
             formData.append('split-longer-sentences', $("#split-longer-sentences").prop("checked"));
             formData.append('to-split-length', $("#to-split-length").val());
-//            formData.append('top-k', $("#top-k").val());
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE) {
-                    var json = JSON.parse(xhr.responseText);
 
-                    var $compiled = $('#summarization--template').tmpl({
-                        summaries: json,
-                        colnames: colnames.split('%')
-                    });
-                    $('#summarization-result').empty().append($compiled);
+                    if (xhr.status === 200) {
+                        var json = JSON.parse(xhr.responseText);
+
+                        var $compiled = $('#summarization--template').tmpl({
+                            summaries: json,
+                            colnames: colnames.split('%')
+                        });
+                        $('#summarization-result').empty().append($compiled);
+                    } else {
+                        $('#summarization-result').empty().append(xhr.statusText);
+                        console.log("Error", xhr.statusText);
+                    }
+
                 }
             };
 
