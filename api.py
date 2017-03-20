@@ -82,7 +82,7 @@ def return_keyphrases():
                                        max_words_length=max_words_length,
                                        min_keyword_frequency=min_keyword_frequency)
                                        
-            return json.dumps(keyphrases)
+    return json.dumps(keyphrases)
 
 
 def strtobool (val):
