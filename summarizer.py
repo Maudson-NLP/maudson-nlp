@@ -210,11 +210,11 @@ def summarize(data,
         if use_bigrams:
             print(DELIMITER + 'After vectorization (no bigrams):')
             vectorized = vectorize_bigrams(sw_bigrams_removed)
-            print(vectorized[:2])
         else:
             print(DELIMITER + 'After vectorization (using bigrams):')
             vectorized = vectorize(sw_bigrams_removed)
-            print(vectorized[:2])
+        print(vectorized.shape)
+        print(vectorized[:2])
 
         if use_svd:
             print(DELIMITER + 'After SVD:')
