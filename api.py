@@ -65,4 +65,4 @@ def return_keyphrases():
 
 if __name__ == '__main__':
     env_port = int(os.environ.get("PORT", 5000))
-    app.run(port=env_port, debug=True)
+    app.run(host='0.0.0.0', port=env_port, debug=True)
