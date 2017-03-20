@@ -13,6 +13,10 @@ app = Flask(__name__, static_url_path='', static_folder='.')
 
 @app.route('/summarize', methods=['GET', 'POST'])
 def summarize_route():
+    """
+    Flask route for summarization + noun phrases task
+    :return: Json summary response
+    """
     if 'file' not in request.files:
         return 'no file provided'
     file = request.files['file']
@@ -29,11 +33,23 @@ def summarize_route():
     form_use_bigrams = request.form['use-bigrams']
     form_use_svd = request.form['use-svd']
     form_use_noun_phrases = request.form['use-noun-phrases']
+    form_split_longer_sentences = request.form['split-longer-sentences']
+    form_split_length = request.form['to-split-length']
 
     use_bigrams = strtobool(form_use_bigrams)
     use_svd = strtobool(form_use_svd)
     use_noun_phrases = strtobool(form_use_noun_phrases)
-    summary = summarize(file.filename, columns, l, use_bigrams, use_svd, k, use_noun_phrases=use_noun_phrases)
+    split_longer_sentences = strtobool(form_split_longer_sentences)
+    split_length = strtobool(form_split_length)
+
+    summary = summarize(
+        data=file.filename, columns=columns,
+        l=l,
+        use_bigrams=use_bigrams,
+        use_svd=use_svd, k=k,
+        use_noun_phrases=use_noun_phrases,
+        split_longer_sentences=split_longer_sentences, to_split_length=split_length
+    )
 
     return json.dumps(summary)
 
@@ -82,7 +98,7 @@ def strtobool (val):
 
 
 if __name__ == '__main__':
-    # Install nltk english stopwords
+    # Install nltk tools on Heroku
     if os.environ.get('HEROKU'):
         nltk.download('wordnet')
         nltk.download('punkt')

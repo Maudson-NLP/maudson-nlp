@@ -21,13 +21,34 @@ def make_sentences(df, columns):
     sentence_sets = []
     for col in columns:
         if str(df[col].dtype) == 'object':
-            # Use a period as most users do not end their answers with periods
-            # todo - Possible source of optimization
+            # Use a period as some users do not end their answers with periods
+            # todo - tofix
             text_blob = df[col].str.cat(sep='. ')
             tokenized = tokenizer.tokenize(text_blob)
             sentence_sets.append(tokenized)
 
     return np.array(sentence_sets)
+
+
+def split_long_sentences(sentences, l):
+    """
+    Split longer sentences so that they don't always take precedence in vector distance computation.
+    Todo - worthy of optimization
+    :param: sentences - list of sentences
+    :param: l - if sentence word count is longer than l, split into two sentences at l
+    :return: List of split sentences, which will be longer than the input sentences list
+    """
+    sentence_split_list = []
+    for sentence in sentences:
+        sentence_split = sentence.split()
+        if len(sentence_split) > l:
+            first_half = ' '.join(sentence_split[:l])
+            second_half = ' '.join(sentence_split[l:])
+            sentence_split_list.append(first_half)
+            sentence_split_list.append(second_half)
+        else:
+            sentence_split_list.append(sentence)
+    return sentence_split_list
 
 
 def do_spellcheck(sentences):
