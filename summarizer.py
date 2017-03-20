@@ -1,7 +1,6 @@
 import scipy
 import logging
 import sklearn
-import numpy as np
 import pandas as pd
 import scipy.sparse
 import sklearn.metrics.pairwise
