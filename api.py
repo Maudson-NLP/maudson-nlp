@@ -87,6 +87,7 @@ if __name__ == '__main__':
         nltk.download('wordnet')
         nltk.download('punkt')
         nltk.download('stopwords')
+        nltk.download('averaged_perceptron_tagger')
 
     env_port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=env_port, debug=True)
