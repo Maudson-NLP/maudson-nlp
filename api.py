@@ -69,13 +69,20 @@ def return_keyphrases():
         # filename = secure_filename(file.filename)
         src = os.getcwd() + '/uploaded_data/'
         file.save(os.path.join(src, file.filename))
-    if 'nb-keyphrases' not in request.files:
-        nb_kp = 10
-    else:
-        nb_kp = request.files['nb-keyphrases']
-    keyphrases = kp.extract_keyphrases('uploaded_data/'+file.filename, nb_kp)
     
-    return json.dumps(keyphrases)
+    nb_kp = request.form['nb_keyphrases']
+    min_char_length = request.form['min_char_length']
+    max_words_length = request.form['max_words_length']
+    min_keyword_frequency = request.form['min_keyword_frequency']
+    
+    keyphrases = kp.extract_keyphrases(
+                                       filename='uploaded_data/'+file.filename,
+                                       nb_kp=nb_kp,
+                                       min_char_length=min_char_length,
+                                       max_words_length=max_words_length,
+                                       min_keyword_frequency=min_keyword_frequency)
+                                       
+            return json.dumps(keyphrases)
 
 
 def strtobool (val):
