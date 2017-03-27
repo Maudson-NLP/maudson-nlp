@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-            <title>Unilvever - NLP Project</title>
+            <title>Unilever - NLP Project</title>
             
             <link rel="stylesheet" href="styles/styles.css">
     </head>
@@ -66,13 +66,28 @@
 
 
         <h3>Keyphrase extraction</h3><br>
-        
+
         <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
-        <input id="nb-keyphrases" placeholder="How many keyphrases per question?"/><br>
-        
-        <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
-        <div id="result_keyphrase"></div>
-        
+            <div class="keyphrase_params">
+                How many keyphrases per question?
+                <input id="nb_keyphrases" type="number" value="10" />
+            </div><br>
+            <div> Advanced parameters </div><br>
+            <div class="keyphrase_params">
+                Minimum number of characters per word
+                <input id="min_char_length" type="number" value="1" />
+            </div>
+            <div class="keyphrase_params">
+                Maximum number of words per keyphrase
+                <input id="max_words_length" type="number" value="5" />
+            </div>
+            <div class="keyphrase_params">
+                Minimum frequency for the keyphrase in the text
+                <input id="min_keyword_frequency" type="number" value="1" />
+            </div>
+            <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
+            <div id="result_keyphrase"></div>
+
         <script>
         function doUpload(){
             $('#summarization-result').text('Summarizing...');
@@ -119,12 +134,16 @@
         
         function doUpload_keyphrase(){
             $('#result_keyphrase').text('Extracting keyphrases...');
+            
             var fileInput = document.getElementById('the-file-keyphrase');
             var file = fileInput.files[0];
             var formData = new FormData();
+            
             formData.append('file-keyphrase', file);
-            var nb_kp = $('#nb-keyphrases');
-            formData.append('nb-keyphrases', nb_kp.val());
+            formData.append('nb_keyphrases', $("#nb_keyphrases").val());
+            formData.append('min_char_length', $("#min_char_length").val());
+            formData.append('max_words_length', $("#max_words_length").val());
+            formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
             
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -132,9 +151,9 @@
                     var json = JSON.parse(xhr.responseText);
                     
                     var $compiled = $('#keyphrases--template').tmpl({
-                                                                   keyphrases: json
-                                                                   });
-                                                                   $('#result_keyphrase').empty().append($compiled);
+                                                                    keyphrases: json}
+                                                                    );
+                                                                    $('#result_keyphrase').empty().append($compiled);
                 }
             };
             
