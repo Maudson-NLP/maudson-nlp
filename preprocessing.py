@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
 
-def make_sentences(df, columns):
+def make_sentences_from_dataframe(df, columns):
     """
     Concatenate columns of data frame into list of lists of sentences
     :param df: Pandas DataFrame

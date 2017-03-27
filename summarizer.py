@@ -18,7 +18,7 @@ def ortho_proj_vec(vectors, B):
     Find the vector that is furthest from the subspace spanned by the vectors in B
     :param vectors: List of vectors to search
     :param B: Set of unit vectors that form the basis of the subspace
-    :return:
+    :return: Index of furthest vector
     """
     print(DELIMITER + "Calculating vector with largest distance to subspace of {} basis vectors".format(len(B)))
     projs = csr_matrix(vectors.shape, dtype=np.int8)  # try coo_matrix?
@@ -26,7 +26,6 @@ def ortho_proj_vec(vectors, B):
     iteration = 0
     for b in B:
         iteration += 1
-        # print("Starting with basis vector {} of {}".format(iteration, len(B)))
         p_i = np.multiply(vectors.dot(b.T), b)
         projs += p_i
 
@@ -38,7 +37,7 @@ def ortho_proj_vec(vectors, B):
 
 
 def compute_mean_vector(vectors):
-    c = (1 / vectors.shape[0]) * np.sum(vectors, axis=0) #np.mean...
+    c = np.mean(vectors, axis=0)
     return csr_matrix(c)
 
 
@@ -182,7 +181,7 @@ def summarize(data,
         df = data
 
     print(DELIMITER + 'Raw sentences:')
-    sentence_sets = make_sentences(df, columns)
+    sentence_sets = make_sentences_from_dataframe(df, columns)
     print(sentence_sets[0][:10])
 
     summaries = []
