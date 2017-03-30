@@ -35,19 +35,23 @@ def summarize_route():
     form_use_noun_phrases = request.form['use-noun-phrases']
     form_split_longer_sentences = request.form['split-longer-sentences']
     form_split_length = request.form['to-split-length']
+    form_group_by = request.form['group-by']
+    form_extract_sibling_sents = request.form['extract-sibling-sents']
 
     use_bigrams = strtobool(form_use_bigrams)
     use_svd = strtobool(form_use_svd)
     use_noun_phrases = strtobool(form_use_noun_phrases)
     split_longer_sentences = strtobool(form_split_longer_sentences)
+    extract_sibling_sents = strtobool(form_extract_sibling_sents)
 
     summary = summarize(
-        data=file.filename, columns=columns,
+        data=file.filename, columns=columns, group_by=form_group_by,
         l=l,
         use_bigrams=use_bigrams,
         use_svd=use_svd, k=k,
         use_noun_phrases=use_noun_phrases,
-        split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length)
+        split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length),
+        extract_sibling_sents=extract_sibling_sents
     )
 
     return json.dumps(summary)
