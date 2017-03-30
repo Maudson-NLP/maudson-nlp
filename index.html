@@ -23,13 +23,23 @@
                 </div>
 
                 <div class="summarization-upload__input">
-                    Max summary length (default 100):
+                    If each row corresponds to different product, name of ID column on which to group:
+                    <input id="group-by" />
+                </div>
+
+                <div class="summarization-upload__input">
+                    Max summary length:
                     <input id="l-value" type="number" value="100" />
                 </div>
 
-                <div>
+                <div class="summarization-upload__input">
                     Split longer sentences?
                     <input id="split-longer-sentences" type="checkbox" />
+                </div>
+
+                <div>
+                    Extract sibling sentences?
+                    <input id="extract-sibling-sents" type="checkbox" />
                 </div>
 
                 <div class="summarization-upload__input">
@@ -106,6 +116,8 @@
             formData.append('use-noun-phrases', $("#noun-phrases").prop("checked"));
             formData.append('split-longer-sentences', $("#split-longer-sentences").prop("checked"));
             formData.append('to-split-length', $("#to-split-length").val());
+            formData.append('group-by', $("#group-by").val());
+            formData.append('extract-sibling-sents', $("#extract-sibling-sents").val());
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -168,7 +180,7 @@
         <script id="summarization--template" type="text/x-jquery-tmpl">
             {{each(i, summary) summaries}}
                 <div class="summary-item">${i + 1}. ${colnames[i]}:</div>
-                    <div class="summary-item__detail">${summary[0]}</div>
+                    <div class="summary-item__detail">${summary[0]}</br></div>
                     {{each(i, noun_phrase) summary[1]}}
                         <div class="summary-item__noun-phrase">${noun_phrase}</div>
                     {{/each}}

@@ -11,7 +11,7 @@ from sklearn.feature_extraction import FeatureHasher
 def make_sentences_from_dataframe(df, columns):
     """
     Concatenate columns of data frame into list of lists of sentences
-    :param df: Pandas DataFrame
+    :param df: pd.DataFrame
     :param columns: list of strings of columns to convert to documents
     :return: list of lists of sentences
     """
@@ -26,6 +26,26 @@ def make_sentences_from_dataframe(df, columns):
             text_blob = df[col].str.cat(sep='. ')
             tokenized = tokenizer.tokenize(text_blob)
             sentence_sets.append(tokenized)
+
+    return np.array(sentence_sets)
+
+
+def make_sentences_by_group(df, group_by_col, column):
+    """
+    Concatenate columns of dataframe into list of sentences, by group.
+    :param df: pd.DataFrame
+    :param column: String - column which contains text to concatenate for each group
+    :param group_by_col: String - column on which to group
+    :return: List<List<String>> - List of lists of sentences
+    """
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    # grouped = df.groupby(group_by_col, as_index=False)
+
+    sentence_sets = []
+    for group in df[group_by_col].unique():
+        sentences = df[df[group_by_col] == group][column].str.cat(sep='. ')
+        tokenized = tokenizer.tokenize(sentences)
+        sentence_sets.append(tokenized)
 
     return np.array(sentence_sets)
 
@@ -49,6 +69,33 @@ def split_long_sentences(sentences, l):
         else:
             sentence_split_list.append(sentence)
     return sentence_split_list
+
+
+def extract_sibling_sentences(sentences):
+    '''
+    Parse sentence POS tree and extract a list of noun phrases
+    :param sentences: List<String> of sentences to extract from
+    :return: List<String> of all noun phrases
+    '''
+    # todo: copypasta - fixme
+
+    sentences = [nltk.word_tokenize(sent) for sent in sentences]
+    sentences = [nltk.pos_tag(sent) for sent in sentences]
+
+    grammar = "NP: {<DT>?<JJ>*<NN>}"
+
+    cp = nltk.RegexpParser(grammar)
+    result = [cp.parse(sentence) for sentence in sentences]
+
+    sibling_sentences = []
+    for s in result:
+        if isinstance(s, nltk.tree.Tree):
+            if s.label():
+                if s.label() == 'S':
+                    nps = [word for word, tag in s.leaves()]
+                    sibling_sentences.append(' '.join(nps))
+
+    return sibling_sentences
 
 
 def do_spellcheck(sentences):

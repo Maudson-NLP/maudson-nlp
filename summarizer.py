@@ -152,12 +152,14 @@ def sentence_add_loop(vectors, sentences, S, B, L):
 
 def summarize(data,
               columns,
+              group_by=None,
               l=100,
               use_bigrams=False,
               use_svd=False,
               k=100,
               use_noun_phrases=False,
               split_longer_sentences=False,
+              extract_sibling_sents=True,
               to_split_length=50):
     """
     Start summarization task on excel file with columns to summarize
@@ -180,45 +182,56 @@ def summarize(data,
     else:
         df = data
 
-    print(DELIMITER + 'Raw sentences:')
-    sentence_sets = make_sentences_from_dataframe(df, columns)
-    print(sentence_sets[0][:10])
+    if group_by:
+        print(DELIMITER + 'Raw sentences:')
+        sentence_sets = make_sentences_by_group(df, group_by, columns[0])
+        print(sentence_sets[0][:10])
+    else:
+        print(DELIMITER + 'Raw sentences:')
+        # todo - only one columm supported for grouped summarization
+        sentence_sets = make_sentences_from_dataframe(df, columns)
+        print(sentence_sets[0][:10])
 
     summaries = []
     # Now we iterate over sentence groups for each column and summarize each
     for sentence_set in sentence_sets:
-        print(DELIMITER + 'After lemmatization:')
-        lemmatized = do_lemmatization(sentence_set)
-        print(lemmatized[:10])
-
         if split_longer_sentences:
+            sentence_set = split_long_sentences(sentence_set, to_split_length)
             print(DELIMITER + 'After sentence splitting:')
-            lemmatized = split_long_sentences(lemmatized, to_split_length)
-            print(lemmatized[:10])
+            print(sentence_set[:10])
+
+        if extract_sibling_sents:
+            sentence_set = extract_sibling_sentences(sentence_set)
+            print(DELIMITER + 'After sibling sentences extraction:')
+            print(sentence_set[:10])
+
+        lemmatized = do_lemmatization(sentence_set)
+        print(DELIMITER + 'After lemmatization:')
+        print(lemmatized[:10])
 
         # Todo - very slow as compared to in python...
         # print(delimiter + ' After spellcheck:')
         # spellchecked = do_spellcheck(lemmatized)
         # print(spellchecked[:10])
 
-        print(DELIMITER + 'After removing stopword bigrams:')
         sw_bigrams_removed = remove_stopword_bigrams(lemmatized)
+        print(DELIMITER + 'After removing stopword bigrams:')
         print(sw_bigrams_removed[:2])
         print(len(sw_bigrams_removed))
 
         if use_bigrams:
-            print(DELIMITER + 'After vectorization (no bigrams):')
             vectorized = vectorize_bigrams(sw_bigrams_removed)
+            print(DELIMITER + 'After vectorization (no bigrams):')
         else:
-            print(DELIMITER + 'After vectorization (using bigrams):')
             vectorized = vectorize(sw_bigrams_removed)
+            print(DELIMITER + 'After vectorization (using bigrams):')
         print(vectorized.shape)
         print(vectorized[:2])
 
         if use_svd:
-            print(DELIMITER + 'After SVD:')
             vectorized = vectorized.asfptype()
             U, s, V = scipy.sparse.linalg.svds(vectorized, k=k)
+            print(DELIMITER + 'After SVD:')
             print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
             vectorized = csr_matrix(U)
 
