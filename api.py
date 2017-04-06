@@ -17,25 +17,17 @@ def summarize_route():
     Flask route for summarization + noun phrases task
     :return: Json summary response
     """
-    print('here0')
     if 'file' not in request.files:
-        print('here1')
         return 'no file provided'
     file = request.files['file']
-    print('here2')
     if file.filename == '':
-        print('here3')
         return 'no file provided'
     if file:
-        print('here4')
         # filename = secure_filename(file.filename)
         src = os.getcwd() + '/uploaded_data/'
-        print('here5')
         file.save(os.path.join(src, file.filename))
-        print('here6')
 
     if request.form['columns']:
-        print('here7')
         columns = request.form['columns'].split('%')
     else:
         columns = []
