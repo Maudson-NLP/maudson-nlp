@@ -8,6 +8,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
 
+DELIMITER = '\n' + '*' * 30 + ' '
+
+
 def make_sentences_from_dataframe(df, columns):
     """
     Concatenate columns of data frame into list of lists of sentences
@@ -17,16 +20,20 @@ def make_sentences_from_dataframe(df, columns):
     """
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
     # Strip whitespace from columns - todo: just use indices instead?
-    df.columns = [col.strip() for col in df.columns]
+    if len(columns) == 0:
+        # Just use all columns
+        df.columns = [col.strip() for col in df.columns]
+        columns = df.columns
     sentence_sets = []
     for col in columns:
         if str(df[col].dtype) == 'object':
             # Use a period as some users do not end their answers with periods
-            # todo - tofix
+            # todo - but a lot of people do...
             text_blob = df[col].str.cat(sep='. ')
             tokenized = tokenizer.tokenize(text_blob)
             sentence_sets.append(tokenized)
 
+    print(sentence_sets[0][:10])
     return np.array(sentence_sets)
 
 
@@ -45,9 +52,10 @@ def make_sentences_by_group(df, group_by_col, column):
     for group in df[group_by_col].unique():
         sentences = df[df[group_by_col] == group][column].str.cat(sep='. ')
         tokenized = tokenizer.tokenize(sentences)
-        sentence_sets.append(tokenized)
+        sentence_sets.append((group, tokenized))
 
-    return np.array(sentence_sets)
+    print(sentence_sets[0][:10])
+    return sentence_sets
 
 
 def split_long_sentences(sentences, l):
@@ -68,6 +76,9 @@ def split_long_sentences(sentences, l):
             sentence_split_list.append(second_half)
         else:
             sentence_split_list.append(sentence)
+
+    print(DELIMITER + 'After sentence splitting:')
+    print(sentence_split_list[:10])
     return sentence_split_list
 
 
@@ -77,7 +88,7 @@ def extract_sibling_sentences(sentences):
     :param sentences: List<String> of sentences to extract from
     :return: List<String> of all noun phrases
     '''
-    # todo: copypasta - fixme
+    # todo: copypasta - cleanme
 
     sentences = [nltk.word_tokenize(sent) for sent in sentences]
     sentences = [nltk.pos_tag(sent) for sent in sentences]
@@ -95,6 +106,8 @@ def extract_sibling_sentences(sentences):
                     nps = [word for word, tag in s.leaves()]
                     sibling_sentences.append(' '.join(nps))
 
+    print(DELIMITER + 'After sibling sentences extraction:')
+    print(sibling_sentences[:10])
     return sibling_sentences
 
 
@@ -143,6 +156,8 @@ def do_lemmatization(sentences):
             lemma_sentence.append(wlem.lemmatize(w))
         lemma_sentences.append(' '.join(lemma_sentence))
 
+    print(DELIMITER + 'After lemmatization:')
+    print(lemma_sentences[:10])
     return lemma_sentences
 
 
@@ -163,31 +178,27 @@ def remove_stopword_bigrams(sentences):
         joined = " ".join("%s" % tup[0] for tup in filtered)
         sw_bigrams_removed.append(joined)
 
+    print(DELIMITER + 'After removing stopword bigrams:')
+    print(sw_bigrams_removed[:2])
+    print(len(sw_bigrams_removed))
     return sw_bigrams_removed
 
 
-def vectorize(sentences):
+def vectorize(sentences, ngram_range=(1,1)):
     """
     Vectorize sentences using plain sklearn.feature_extraction.CountVectorizer.
     Represents the corpus as a matrix of sentences by word counts.
     :param sentences: list of sentences
     :return: scipy.sparse.coo_matrix - vectorized word counts. N (# sentences) x M (length of vocabulary)
     """
-    vectorizer = CountVectorizer().fit(sentences)
-    return vectorizer.transform(sentences)
+    vectorizer = CountVectorizer(ngram_range=ngram_range).fit(sentences)
 
+    transformed = vectorizer.transform(sentences)
+    print(DELIMITER + 'After vectorization (ngram_range: {}):'.format(ngram_range))
+    print(transformed.shape)
+    print(transformed[:3])
 
-def vectorize_bigrams(sentences):
-    """
-    Vectorize sentences using sklearn.feature_extraction.FeatureHasher.
-    Represents the corpus as a matrix of sentences by unique bigram count.
-    :param sentences:
-    :return:
-    """
-    fh = FeatureHasher(input_type='string')
-    bigrams = [nltk.bigrams(sentence.split()) for sentence in sentences]
-    vectorized = fh.transform(((' '.join(x) for x in sample) for sample in bigrams))
-    return vectorized
+    return transformed
 
 
 def extract_noun_phrases(sentences):

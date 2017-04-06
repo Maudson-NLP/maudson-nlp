@@ -18,7 +18,7 @@
                 <input id="the-file" name="file" type="file" />
 
                 <div class="summarization-upload__input">
-                    Headers of columns to summarize, separated by "%":
+                    Headers of columns to summarize, separated by "%" (defaults to all columns):
                     <input id="the-column-names" />
                 </div>
 
@@ -32,39 +32,50 @@
                     <input id="l-value" type="number" value="100" />
                 </div>
 
-                <div class="summarization-upload__input">
-                    Split longer sentences?
-                    <input id="split-longer-sentences" type="checkbox" />
-                </div>
+                <button id="show-advanced">Advanced Options</button>
+                <div id="advanced-options">
 
-                <div>
-                    Extract sibling sentences?
-                    <input id="extract-sibling-sents" type="checkbox" />
-                </div>
+                    <div class="summarization-upload__input">
+                        Split longer sentences?
+                        <input id="split-longer-sentences" type="checkbox" />
+                    </div>
 
-                <div class="summarization-upload__input">
-                    Number of words at which to split:
-                    <input id="to-split-length" type="number" value="50" />
-                </div>
+                    <div class="summarization-upload__input">
+                        Number of words at which to split:
+                        <input id="to-split-length" type="number" value="50" />
+                    </div>
 
-                <div class="summarization-upload__input">
-                    Vectorize with bigrams?
-                    <input id="vec-bigram" type="checkbox" />
-                </div>
+                    <div>
+                        Extract sibling sentences?
+                        <input id="extract-sibling-sents" type="checkbox" checked />
+                    </div>
 
-                <div class="summarization-upload__input">
-                    Use SVD?
-                    <input id="svd" type="checkbox" />
-                </div>
+                    <div class="summarization-upload__input">
+                        Vectorization ngram range:
+                        <input id="ngram-min" type="text" value="2" />
+                        <input id="ngram-max" type="text" value="3" />
+                    </div>
 
-                <div class="summarization-upload__input">
-                    Top k concepts to use:
-                    <input id="top-k" type="number" value="100" />
-                </div>
+                    <div class="summarization-upload__input">
+                        Scale vectors?
+                        <input id="scale-vectors" type="checkbox" checked />
+                    </div>
 
-                <div class="summarization-upload__input">
-                    Extract noun phrases?
-                    <input id="noun-phrases" type="checkbox" />
+                    <div class="summarization-upload__input">
+                        Use SVD?
+                        <input id="svd" type="checkbox" checked />
+                    </div>
+
+                    <div class="summarization-upload__input">
+                        Top k concepts to use:
+                        <input id="top-k" type="number" value="100" />
+                    </div>
+
+                    <div class="summarization-upload__input">
+                        Extract noun phrases?
+                        <input id="noun-phrases" type="checkbox" />
+                    </div>
+
                 </div>
 
 
@@ -99,50 +110,6 @@
             <div id="result_keyphrase"></div>
 
         <script>
-        function doUpload(){
-            $('#summarization-result').text('Summarizing...');
-
-            var fileInput = document.getElementById('the-file');
-            var file = fileInput.files[0];
-            var formData = new FormData();
-
-            colnames = $('#the-column-names').val();
-            formData.append('file', file);
-            formData.append('columns', colnames);
-            formData.append('l-value', $('#l-value').val());
-            formData.append('use-bigrams', $("#vec-bigram").prop("checked"));
-            formData.append('use-svd', $("#svd").prop("checked"));
-            formData.append('top-k', $("#top-k").val());
-            formData.append('use-noun-phrases', $("#noun-phrases").prop("checked"));
-            formData.append('split-longer-sentences', $("#split-longer-sentences").prop("checked"));
-            formData.append('to-split-length', $("#to-split-length").val());
-            formData.append('group-by', $("#group-by").val());
-            formData.append('extract-sibling-sents', $("#extract-sibling-sents").val());
-
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == XMLHttpRequest.DONE) {
-
-                    if (xhr.status === 200) {
-                        var json = JSON.parse(xhr.responseText);
-
-                        var $compiled = $('#summarization--template').tmpl({
-                            summaries: json,
-                            colnames: colnames.split('%')
-                        });
-                        $('#summarization-result').empty().append($compiled);
-                    } else {
-                        $('#summarization-result').empty().append(xhr.statusText);
-                        console.log("Error", xhr.statusText);
-                    }
-
-                }
-            };
-
-            // Add any event handlers here...
-            xhr.open('POST', '/summarize', true);
-            xhr.send(formData);
-        }
         
         function doUpload_keyphrase(){
             $('#result_keyphrase').text('Extracting keyphrases...');
@@ -179,9 +146,9 @@
         
         <script id="summarization--template" type="text/x-jquery-tmpl">
             {{each(i, summary) summaries}}
-                <div class="summary-item">${i + 1}. ${colnames[i]}:</div>
-                    <div class="summary-item__detail">${summary[0]}</br></div>
-                    {{each(i, noun_phrase) summary[1]}}
+                <div class="summary-item">${i + 1}. ${summary[0]}</div>
+                    <div class="summary-item__detail">${summary[1]}</br></div>
+                    {{each(i, noun_phrase) summary[2]}}
                         <div class="summary-item__noun-phrase">${noun_phrase}</div>
                     {{/each}}
                 </div>
@@ -200,6 +167,7 @@
 
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
         <script src="https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+        <script src="js/summarization.js"></script>
 
     </body>
 
