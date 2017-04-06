@@ -4,8 +4,7 @@ from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction import FeatureHasher
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 DELIMITER = '\n' + '*' * 30 + ' '
@@ -184,14 +183,18 @@ def remove_stopword_bigrams(sentences):
     return sw_bigrams_removed
 
 
-def vectorize(sentences, ngram_range=(1,1)):
+def vectorize(sentences, ngram_range=(1,1), tfidf=False):
     """
     Vectorize sentences using plain sklearn.feature_extraction.CountVectorizer.
     Represents the corpus as a matrix of sentences by word counts.
     :param sentences: list of sentences
     :return: scipy.sparse.coo_matrix - vectorized word counts. N (# sentences) x M (length of vocabulary)
     """
-    vectorizer = CountVectorizer(ngram_range=ngram_range).fit(sentences)
+    if tfidf:
+        vectorizer = TfidfVectorizer(ngram_range=ngram_range)
+    else:
+        vectorizer = CountVectorizer(ngram_range=ngram_range)
+    vectorizer.fit(sentences)
 
     transformed = vectorizer.transform(sentences)
     print(DELIMITER + 'After vectorization (ngram_range: {}):'.format(ngram_range))

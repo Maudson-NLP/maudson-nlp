@@ -19,6 +19,7 @@ function doUpload(){
     formData.append('l-value', $('#l-value').val());
     formData.append('ngram-min', $("#ngram-min").val());
     formData.append('ngram-max', $("#ngram-max").val());
+    formData.append('tfidf', $("#tfidf").prop("checked"));
     formData.append('use-svd', $("#svd").prop("checked"));
     formData.append('scale-vectors', $("#scale-vectors").prop("checked"));
     formData.append('top-k', $("#top-k").val());
