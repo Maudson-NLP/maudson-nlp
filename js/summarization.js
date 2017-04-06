@@ -35,9 +35,11 @@ function doUpload(){
 
             if (xhr.status === 200) {
                 var json = JSON.parse(xhr.responseText);
+                // Join the array of strings by simple spaces - todo
+                json.map(function(j){ j[1] = j[1].join(' '); return j });
 
                 var $compiled = $('#summarization--template').tmpl({
-                    summaries: json,
+                    summaries: json
                 });
                 $('#summarization-result').empty().append($compiled);
             } else {

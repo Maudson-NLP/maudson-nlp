@@ -187,7 +187,7 @@ def summarize(data,
 
     print(DELIMITER + 'Raw sentences:')
     if group_by:
-        # todo - only one columm supported for grouped summarization
+        # todo - only one column supported for grouped summarization
         sentence_sets = make_sentences_by_group(df, group_by, columns[0])
     else:
         sentence_sets = make_sentences_from_dataframe(df, columns)

@@ -18,6 +18,11 @@
                 <input id="the-file" name="file" type="file" />
 
                 <div class="summarization-upload__input">
+                    Max summary length:
+                    <input id="l-value" type="number" value="100" />
+                </div>
+
+                <div class="summarization-upload__input">
                     Headers of columns to summarize, separated by "%" (defaults to all columns):
                     <input id="the-column-names" />
                 </div>
@@ -25,11 +30,6 @@
                 <div class="summarization-upload__input">
                     If each row corresponds to different product, name of ID column on which to group:
                     <input id="group-by" />
-                </div>
-
-                <div class="summarization-upload__input">
-                    Max summary length:
-                    <input id="l-value" type="number" value="100" />
                 </div>
 
                 <button id="show-advanced">Advanced Options</button>
@@ -47,7 +47,7 @@
 
                     <div>
                         Extract sibling sentences?
-                        <input id="extract-sibling-sents" type="checkbox" checked />
+                        <input id="extract-sibling-sents" type="checkbox" />
                     </div>
 
                     <div class="summarization-upload__input">

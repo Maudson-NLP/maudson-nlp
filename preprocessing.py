@@ -8,7 +8,8 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 DELIMITER = '\n' + '*' * 30 + ' '
-
+# For adding periods to the ends of the sentences
+eos_regex = r',?\s*([^.])$'
 
 def make_sentences_from_dataframe(df, columns):
     """
@@ -26,9 +27,8 @@ def make_sentences_from_dataframe(df, columns):
     sentence_sets = []
     for col in columns:
         if str(df[col].dtype) == 'object':
-            # Use a period as some users do not end their answers with periods
-            # todo - but a lot of people do...
-            text_blob = df[col].str.cat(sep='. ')
+            df[col] = df[col].str.replace(eos_regex, r'\1.')
+            text_blob = df[col].str.cat(sep=' ')
             tokenized = tokenizer.tokenize(text_blob)
             sentence_sets.append(tokenized)
 
@@ -49,7 +49,8 @@ def make_sentences_by_group(df, group_by_col, column):
 
     sentence_sets = []
     for group in df[group_by_col].unique():
-        sentences = df[df[group_by_col] == group][column].str.cat(sep='. ')
+        df[column] = df[column].str.replace(eos_regex, r'\1.')
+        sentences = df[df[group_by_col] == group][column].str.cat(sep=' ')
         tokenized = tokenizer.tokenize(sentences)
         sentence_sets.append((group, tokenized))
 
