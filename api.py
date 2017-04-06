@@ -27,19 +27,30 @@ def summarize_route():
         src = os.getcwd() + '/uploaded_data/'
         file.save(os.path.join(src, file.filename))
 
-    columns = request.form['columns'].split('%')
+    if request.form['columns']:
+        columns = request.form['columns'].split('%')
+    else:
+        columns = []
+
     l = int(request.form['l-value'])
     k = int(request.form['top-k'])
-    form_use_bigrams = request.form['use-bigrams']
+    form_ngram_min = request.form['ngram-min']
+    form_ngram_max = request.form['ngram-max']
+
     form_use_svd = request.form['use-svd']
+    form_scale_vectors = request.form['scale-vectors']
     form_use_noun_phrases = request.form['use-noun-phrases']
     form_split_longer_sentences = request.form['split-longer-sentences']
     form_split_length = request.form['to-split-length']
     form_group_by = request.form['group-by']
     form_extract_sibling_sents = request.form['extract-sibling-sents']
 
-    use_bigrams = strtobool(form_use_bigrams)
+    ngram_min = int(form_ngram_min)
+    ngram_max = int(form_ngram_max)
+    ngram_range = (ngram_min, ngram_max)
+
     use_svd = strtobool(form_use_svd)
+    scale_vectors = strtobool(form_scale_vectors)
     use_noun_phrases = strtobool(form_use_noun_phrases)
     split_longer_sentences = strtobool(form_split_longer_sentences)
     extract_sibling_sents = strtobool(form_extract_sibling_sents)
@@ -47,8 +58,9 @@ def summarize_route():
     summary = summarize(
         data=file.filename, columns=columns, group_by=form_group_by,
         l=l,
-        use_bigrams=use_bigrams,
+        ngram_range=ngram_range,
         use_svd=use_svd, k=k,
+        scale_vectors=scale_vectors,
         use_noun_phrases=use_noun_phrases,
         split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length),
         extract_sibling_sents=extract_sibling_sents
