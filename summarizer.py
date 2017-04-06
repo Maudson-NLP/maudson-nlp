@@ -24,9 +24,7 @@ def ortho_proj_vec(vectors, B):
     print(DELIMITER + "Calculating vector with largest distance to subspace of {} basis vectors".format(len(B)))
     projs = csr_matrix(vectors.shape, dtype=np.int8)  # try coo_matrix?
 
-    iteration = 0
     for b in B:
-        iteration += 1
         p_i = np.multiply(vectors.dot(b.T), b)
         projs += p_i
 
@@ -54,6 +52,7 @@ def compute_primary_basis_vector(vectors, sentences, d, L):
     """
     dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d) # should be proj_b0^ui ?
     p = np.argmax(dists)
+
     # Skip vectors that overflow the word limit
     total_length = len(sentences[p].split())
     # Include length of first vector if we aren't dealing with `d` as the mean vector. Todo
@@ -156,6 +155,7 @@ def summarize(data,
               group_by=None,
               l=100,
               ngram_range=(1,1),
+              tfidf=False,
               use_svd=False,
               k=100,
               scale_vectors=False,
@@ -209,7 +209,7 @@ def summarize(data,
         vectors = do_lemmatization(sentence_set)
         vectors = remove_stopword_bigrams(vectors)
 
-        vectors = vectorize(vectors, ngram_range=ngram_range)
+        vectors = vectorize(vectors, ngram_range=ngram_range, tfidf=tfidf)
 
         if scale_vectors:
             scaler = MaxAbsScaler()
