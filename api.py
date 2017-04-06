@@ -40,21 +40,6 @@ def summarize_route():
     else:
         columns = []
 
-    print(
-        request.form['l'],
-        request.form['k'],
-        request.form['form_ngram_min'],
-        request.form['form_ngram_max'],
-        request.form['form_use_svd'],
-        request.form['form_tfidf'],
-        request.form['form_scale_vectors'],
-        request.form['form_use_noun_phrases'],
-        request.form['form_split_longer_sentences'],
-        request.form['form_split_length'],
-        request.form['form_group_by'],
-        request.form['form_extract_sibling_sent'],
-    )
-
     l = int(request.form['l-value'])
     k = int(request.form['top-k'])
     form_ngram_min = request.form['ngram-min']
