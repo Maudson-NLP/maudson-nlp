@@ -3,12 +3,14 @@
     <head>
         <meta charset="UTF-8">
             <title>Unilever - NLP Project</title>
-            
+            <link rel="icon" href="./img/t.png">
             <link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>
         
-        <div>Columbia DSI - Unilever - NLP Project</div><br>
+        <h1>Columbia DSI, Unilever Text Analysis</h1><br>
+        <div>Please upload an excel file (<a href='./img/example_data.png'>example format</a>), to receive results for summarization and keywords extraction</div>
+        <div>For a more detailed description of these algoritihms, please refer to the <a href='https://github.com/Unilever-NLP/unilever-nlp/blob/master/misc/mideterm_report.pdf'>midterm report</a></div>
 
         <div id="summarization__container">
             <h3>Summarization</h3><br>
@@ -90,10 +92,11 @@
             <div id="summarization-result"></div>
         </div>
 
+        <div id="keywords__container">
 
-        <h3>Keyphrase extraction</h3><br>
+            <h3>Keyphrase extraction</h3><br>
 
-        <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
+            <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
             <div class="keyphrase_params">
                 How many keyphrases per question?
                 <input id="nb_keyphrases" type="number" value="10" />
@@ -113,6 +116,8 @@
             </div>
             <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
             <div id="result_keyphrase"></div>
+
+        </div>
 
         <script>
         

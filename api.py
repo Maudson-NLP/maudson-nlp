@@ -10,6 +10,10 @@ import keyword_extraction as kp
 app = Flask(__name__, static_url_path='', static_folder='.')
 
 
+@app.route('/')
+def root():
+    return app.send_static_file('index.html')
+
 
 @app.route('/summarize', methods=['GET', 'POST'])
 def summarize_route():
