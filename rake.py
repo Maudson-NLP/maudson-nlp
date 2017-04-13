@@ -16,6 +16,8 @@ import re
 import operator
 import six
 from six.moves import range
+from nltk import stem
+import json
 
 debug = False
 test = False
@@ -118,6 +120,56 @@ def is_acceptable(phrase, min_char_length, max_words_length):
         return 0
     return 1
 
+def spell_check(phrase_list):
+    
+    with open('dico_spell.json', 'r') as f:
+        dico_spell = json.load(f)
+        
+    for i in range(len(phrase_list)):
+        phrase_split = phrase_list[i].split(' ')
+        for k in range(len(phrase_split)):
+            if phrase_split[k] in dico_spell.keys():
+                phrase_split[k] = dico_spell[phrase_split[k]]
+        phrase_list[i] =  str(' '.join(phrase_split))
+    
+    return phrase_list
+                
+    
+    return phrase_list
+def stem_candidate_keywords(phrase_list):
+    
+    stemmer = stem.PorterStemmer()
+    
+    #Stem phrase_list and track
+    phrase_list_stem = []
+    track_stem = {}
+    for phrase in phrase_list:
+        spl = phrase.split(' ')
+        phrase_stem = ''
+        for item in spl:
+            if len(phrase_stem)==0:
+                phrase_stem += stemmer.stem(item)
+            
+            else:
+                phrase_stem += ' '+stemmer.stem(item)
+
+        phrase_list_stem.append(str(phrase_stem))
+        track_stem[phrase] = str(phrase_stem)
+    
+    #Compute reverse tracking
+    track_stem_rev = {}
+    for phrase, stem_phrase in track_stem.iteritems():
+        if stem_phrase not in track_stem_rev.keys():
+            track_stem_rev[stem_phrase] = [phrase]
+        else:
+            track_stem_rev[stem_phrase].append(phrase)
+
+    #Compute final list of keyphrase candidates
+    final_list = list(set(phrase_list_stem))
+    final_list = [track_stem_rev[str(phrase)][0] for phrase in final_list]
+    
+    return final_list, phrase_list_stem, track_stem
+
 
 def calculate_word_scores(phraseList):
     word_frequency = {}
@@ -136,7 +188,7 @@ def calculate_word_scores(phraseList):
     for item in word_frequency:
         word_degree[item] = word_degree[item] + word_frequency[item]
 
-    # Calculate Word scores = deg(w)/frew(w)
+    # Calculate Word scores = deg(w)/freq(w)
     word_score = {}
     for item in word_frequency:
         word_score.setdefault(item, 0)
@@ -145,18 +197,19 @@ def calculate_word_scores(phraseList):
     return word_score
 
 
-def generate_candidate_keyword_scores(phrase_list, word_score, min_keyword_frequency=1):
+def generate_candidate_keyword_scores(final_list, word_scores_stem, track_stem, min_keyword_frequency=1):
     keyword_candidates = {}
 
-    for phrase in phrase_list:
+    for phrase in final_list:
+        phrase_stem = track_stem[phrase]
         if min_keyword_frequency > 1:
-            if phrase_list.count(phrase) < min_keyword_frequency:
+            if final_list.count(phrase) < min_keyword_frequency:
                 continue
         keyword_candidates.setdefault(phrase, 0)
-        word_list = separate_words(phrase, 0)
+        word_list = separate_words(phrase_stem, 0)
         candidate_score = 0
         for word in word_list:
-            candidate_score += word_score[word]
+            candidate_score += word_scores_stem[word]
         keyword_candidates[phrase] = candidate_score
     return keyword_candidates
 
@@ -173,41 +226,15 @@ class Rake(object):
         sentence_list = split_sentences(text)
 
         phrase_list = generate_candidate_keywords(sentence_list, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length)
+        
+        phrase_list_check = spell_check(phrase_list)
+        
+        final_list, phrase_list_stem, track_stem = stem_candidate_keywords(phrase_list_check)
 
-        word_scores = calculate_word_scores(phrase_list)
+        word_scores_stem = calculate_word_scores(phrase_list_stem)
 
-        keyword_candidates = generate_candidate_keyword_scores(phrase_list, word_scores, self.__min_keyword_frequency)
+        keyword_candidates = generate_candidate_keyword_scores(final_list, word_scores_stem, track_stem, self.__min_keyword_frequency)
 
         sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
         return sorted_keywords
 
-
-if test:
-    text = "Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for constructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types."
-
-    # Split text into sentences
-    sentenceList = split_sentences(text)
-    #stoppath = "FoxStoplist.txt" #Fox stoplist contains "numbers", so it will not find "natural numbers" like in Table 1.1
-    stoppath = "RAKE/SmartStoplist.txt"  #SMART stoplist misses some of the lower-scoring keywords in Figure 1.5, which means that the top 1/3 cuts off one of the 4.0 score words in Table 1.1
-    stopwordpattern = build_stop_word_regex(stoppath)
-
-    # generate candidate keywords
-    phraseList = generate_candidate_keywords(sentenceList, stopwordpattern)
-
-    # calculate individual word scores
-    wordscores = calculate_word_scores(phraseList)
-
-    # generate candidate keyword scores
-    keywordcandidates = generate_candidate_keyword_scores(phraseList, wordscores)
-    if debug: print(keywordcandidates)
-
-    sortedKeywords = sorted(six.iteritems(keywordcandidates), key=operator.itemgetter(1), reverse=True)
-    if debug: print(sortedKeywords)
-
-    totalKeywords = len(sortedKeywords)
-    if debug: print(totalKeywords)
-    print(sortedKeywords[0:(totalKeywords // 3)])
-
-    rake = Rake("SmartStoplist.txt")
-    keywords = rake.run(text)
-    print(keywords)
