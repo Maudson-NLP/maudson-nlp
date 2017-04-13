@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 
 import summarizer
@@ -36,9 +37,6 @@ def filter_dsstore(arr):
 for topic_folder in filter_dsstore(os.listdir(path)):
 	topic = filter(lambda x: x in topic_folder, topics)[0]
 
-	if topic != 'bpoil':
-		continue
-
 	sub_path = path + '/' + topic_folder + '/InputDocs'
 	for news_date in filter_dsstore(os.listdir(sub_path)):
 		for article in filter_dsstore(os.listdir(sub_path + '/' + news_date)):
@@ -50,7 +48,7 @@ df = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in topics_docs.iteritems() ])
 
 print(df[:2])
 summary = summarizer.summarize(
-	data=df[:2],
+	data=df,
 	columns=df.columns,
     l=50,
     tfidf=True,
@@ -62,6 +60,9 @@ summary = summarizer.summarize(
     split_longer_sentences=False,
     extract_sibling_sents=True
 )
+
+with open('test_result.txt', 'w') as outfile:
+    json.dump(summary, outfile)
 
 print(summary)
 

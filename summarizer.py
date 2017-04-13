@@ -220,7 +220,9 @@ def summarize(data,
         if use_svd:
             vectors = vectors.asfptype()
 
-            if k > min(vectors.shape):
+            print(k)
+            print(min(vectors.shape))
+            if k >= min(vectors.shape):
                 k = min(vectors.shape) - 1
                 
             U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
