@@ -205,8 +205,8 @@ def summarize(data,
 
         if split_longer_sentences:
             sentence_set = split_long_sentences(sentence_set, to_split_length)
-        if extract_sibling_sents:
-            sentence_set = extract_sibling_sentences(sentence_set)
+        # if extract_sibling_sents:
+        #     sentence_set = extract_sibling_sentences(sentence_set)
 
         vectors = do_lemmatization(sentence_set)
         vectors = remove_stopword_bigrams(vectors)
