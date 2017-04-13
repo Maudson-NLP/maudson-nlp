@@ -5,7 +5,7 @@ from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
-from nltk.parse.stanford import StanfordParser
+# from nltk.parse.stanford import StanfordParser
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
@@ -35,7 +35,7 @@ def make_sentences_from_dataframe(df, columns):
 	sentence_sets = []
 	for col in columns:
 		if str(df[col].dtype) == 'object':
-			df.loc[col] = df[col].str.replace(eos_regex, r'\1.')
+			df[col] = df[col].str.replace(eos_regex, r'\1.')
 			text_blob = df[col].str.cat(sep=' ')
 			tokenized = tokenizer.tokenize(text_blob)
 			sentence_sets.append(tokenized)
