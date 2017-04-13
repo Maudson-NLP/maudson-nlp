@@ -4,27 +4,64 @@ import pandas as pd
 import summarizer
 
 
-
 path = os.getcwd() + '/data/test_data/Data/'
 
-bpoil_docs = []
-for news_source in os.listdir(path):
-    if news_source[:5] == 'bpoil':
-        sub_path = path + '/' + news_source + '/InputDocs'
-        for news_date in os.listdir(sub_path):
-            for article in os.listdir(sub_path + '/' + news_date):
-                f = open(sub_path + '/' + news_date + '/' + article)
-                bpoil_docs.append(f.read())
+topics = [
+	'bpoil',
+	'EgyptianProtest',
+	'Finan',
+	'H1N1',
+	'haiti',
+	'IraqWar',
+	'LibyaWar',
+	'MJ',
+	'SyrianCrisis',
+]
+
+topics_docs = {
+	'bpoil': [],
+	'EgyptianProtest': [],
+	'Finan': [],
+	'H1N1': [],
+	'haiti': [],
+	'IraqWar': [],
+	'LibyaWar': [],
+	'MJ': [],
+	'SyrianCrisis': [],
+}
+
+def filter_dsstore(arr):
+	return filter(lambda x: not '.DS' in x, arr)
+
+for topic_folder in filter_dsstore(os.listdir(path)):
+	topic = filter(lambda x: x in topic_folder, topics)[0]
+
+	if topic != 'bpoil':
+		continue
+
+	sub_path = path + '/' + topic_folder + '/InputDocs'
+	for news_date in filter_dsstore(os.listdir(sub_path)):
+		for article in filter_dsstore(os.listdir(sub_path + '/' + news_date)):
+			f = open(sub_path + '/' + news_date + '/' + article)
+			topics_docs[topic].append(f.read())
 
 
-print(len(bpoil_docs))
+df = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in topics_docs.iteritems() ]))
 
-df = pd.DataFrame(bpoil_docs)
-
-print(df.shape)
-df.columns = ['BP Oil']
-print(df.head())
-
-summary = summarizer.summarize(df, df.columns, use_svd=True, split_longer_sentences=True)
+print(df[:2])
+summary = summarizer.summarize(
+	data=df[:2],
+	columns=df.columns,
+    l=50,
+    tfidf=True,
+    ngram_range=(2,3),
+    use_svd=True,
+    k=100,
+    scale_vectors=True,
+    use_noun_phrases=False,
+    split_longer_sentences=False,
+    extract_sibling_sents=True
+)
 
 print(summary)
+

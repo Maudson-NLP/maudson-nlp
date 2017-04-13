@@ -154,7 +154,7 @@ def summarize(data,
               columns=[],
               group_by=None,
               l=100,
-              ngram_range=(1,1),
+              ngram_range=(2,3),
               tfidf=False,
               use_svd=False,
               k=100,
@@ -181,6 +181,8 @@ def summarize(data,
         data_dir = './uploaded_data/'
         xl = pd.ExcelFile(data_dir + data)
         df = xl.parse()
+        df = df.dropna(axis=0, how='all') 
+        df = df.dropna(axis=1, how='all') 
         df = df.dropna()
     else:
         df = data
@@ -216,16 +218,12 @@ def summarize(data,
             vectors = scaler.fit_transform(vectors)
 
         if use_svd:
-            use_alt_k = False
-            if k > min(vectors.shape):
-                use_alt_k = True
-                k_new = min(vectors.shape) - 1
+            vectors = vectors.asfptype()
 
-                vectors = vectors.asfptype()
-            if use_alt_k:
-                U, s, V = scipy.sparse.linalg.svds(vectors, k=k_new)
-            else:
-                U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
+            if k > min(vectors.shape):
+                k = min(vectors.shape) - 1
+                
+            U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
 
             print(DELIMITER + 'After SVD:')
             print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
