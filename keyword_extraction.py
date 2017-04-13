@@ -17,7 +17,7 @@ def extract_keyphrases(filename, nb_kp, min_char_length, max_words_length, min_k
     
     srv_concat = [reduce(lambda x,y: str(x)+'. '+str(y), srv[qst[k]]) for k in range(len(srv.columns))]
     
-    stoppath = "kw_include/SmartStoplist.txt"
+    stoppath = "SmartStoplist.txt"
     '''
         Arguments:
         stoppath: path to the list of stopwords
