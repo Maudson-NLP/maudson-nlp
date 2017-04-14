@@ -43,7 +43,7 @@ function doUpload(){
                 });
                 $('#summarization-result').empty().append($compiled);
             } else {
-                $('#summarization-result').empty().append(xhr.statusText);
+                $('#summarization-result').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);
             }
 

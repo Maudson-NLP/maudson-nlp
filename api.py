@@ -22,10 +22,9 @@ def summarize_route():
     :return: Json summary response
     """
     if 'file' not in request.files:
-        return 'no file provided'
+        raise Exception('no file provided')
+
     file = request.files['file']
-    if file.filename == '':
-        return 'no file provided'
     if file:
         # filename = secure_filename(file.filename)
         src = os.getcwd() + '/uploaded_data/'
