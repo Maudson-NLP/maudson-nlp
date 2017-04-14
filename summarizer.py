@@ -220,17 +220,15 @@ def summarize(data,
         if use_svd:
             vectors = vectors.asfptype()
 
-            print(k)
-            print(min(vectors.shape))
             if k >= min(vectors.shape):
                 k = min(vectors.shape) - 1
                 
             U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
+            print(s)
 
             print(DELIMITER + 'After SVD:')
             print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
             vectors = csr_matrix(U)
-
 
         print(DELIMITER + 'Run Algorithm:')
         summary = sem_vol_max(sentence_set, vectors, l)

@@ -43,7 +43,6 @@ for topic_folder in filter_dsstore(os.listdir(path)):
 			f = open(sub_path + '/' + news_date + '/' + article)
 			topics_docs[topic].append(f.read())
 
-
 df = pd.DataFrame(dict([ (k, pd.Series(v)) for k,v in topics_docs.iteritems() ]))
 
 print(df[:2])
