@@ -95,14 +95,24 @@ def return_keyphrases():
     min_char_length = request.form['min_char_length']
     max_words_length = request.form['max_words_length']
     min_keyword_frequency = request.form['min_keyword_frequency']
-    
-    keyphrases = kp.extract_keyphrases(
-                                       filename='uploaded_data/'+file.filename,
-                                       nb_kp=nb_kp,
-                                       min_char_length=min_char_length,
-                                       max_words_length=max_words_length,
-                                       min_keyword_frequency=min_keyword_frequency)
-                                       
+    dataset_type = request.form['dataset_type']
+ 
+    if dataset_type == 'survey':
+        keyphrases = kp.extract_keyphrases_survey(
+                                               filename='uploaded_data/'+file.filename,
+                                               nb_kp=nb_kp,
+                                               min_char_length=min_char_length,
+                                               max_words_length=max_words_length,
+                                               min_keyword_frequency=min_keyword_frequency)
+         
+    elif dataset_type == 'reviews':
+        keyphrases = kp.extract_keyphrases_reviews(
+                                                filename='uploaded_data/'+file.filename,
+                                                nb_kp=nb_kp,
+                                                min_char_length=min_char_length,
+                                                max_words_length=max_words_length,
+                                                min_keyword_frequency=min_keyword_frequency)
+                 
     return json.dumps(keyphrases)
 
 

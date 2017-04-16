@@ -115,6 +115,12 @@
                 Minimum frequency for the keyphrase in the text
                 <input id="min_keyword_frequency" type="number" value="1" />
             </div>
+
+            <div>
+                Reviews Dataset ?
+                <input id="dataset_reviews" type="checkbox" />
+            </div>
+
             <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
             <div id="result_keyphrase"></div>
 
@@ -134,7 +140,12 @@
             formData.append('min_char_length', $("#min_char_length").val());
             formData.append('max_words_length', $("#max_words_length").val());
             formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
-            
+            if (document.getElementById('dataset_reviews').checked){
+                formData.append('dataset_type', 'reviews')
+            }
+            else{
+                formData.append('dataset_type', 'survey')
+            }
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE) {
