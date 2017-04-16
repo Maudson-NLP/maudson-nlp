@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import sys
 import pandas as pd
 import rake
+import json
 
 
-def extract_keyphrases(filename, nb_kp, min_char_length, max_words_length, min_keyword_frequency):
+def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length, min_keyword_frequency):
     
     nb_kp = int(nb_kp)
     srv_raw = pd.ExcelFile(filename)
@@ -32,5 +32,27 @@ def extract_keyphrases(filename, nb_kp, min_char_length, max_words_length, min_k
     return keyphrases
 
 
+def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_length, min_keyword_frequency):
+    
+    nb_kp = int(nb_kp)
+    stoppath = "SmartStoplist.txt"
+    
+    with open('product_name.json', 'r') as f:
+        product_names= json.load(f)
+    
+    
+    data = pd.read_excel(filename)
+    data = data[['productID','reviewText']]
+    
+    product_reviews = {prod:'' for prod in set(data['productID'])}
+    for k in range(len(data)):
+        product_reviews[data['productID'][k]]+= ' '+str(data['reviewText'][k])
+    
+
+    rake_object = rake.Rake(stoppath, int(min_char_length), int(max_words_length), int(min_keyword_frequency))
+    keyphrases = {product: rake_object.run(review)[:nb_kp] for (product, review) in product_reviews.iteritems()}
+    keyphrases = {str(product_names[prod]):[(kw, "%.2f" % ct) for (kw,ct) in lst] for (prod,lst) in keyphrases.iteritems()}
+    
+    return keyphrases
 
 
