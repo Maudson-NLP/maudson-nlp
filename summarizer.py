@@ -162,7 +162,8 @@ def summarize(data,
               use_noun_phrases=False,
               extract_sibling_sents=False,
               split_longer_sentences=False,
-              to_split_length=50):
+              to_split_length=50,
+              exclude_misspelled=False):
     """
     Start summarization task on excel file with columns to summarize
     :param data: String - Name of excel file with columns to summarize
@@ -190,21 +191,18 @@ def summarize(data,
     print(DELIMITER + 'Raw sentences:')
     if group_by:
         # todo - only one column supported for grouped summarization
-        sentence_sets = make_sentences_by_group(df, group_by, columns[0])
+        sentence_sets, columns = make_sentences_by_group(df, group_by, columns[0])
     else:
-        sentence_sets = make_sentences_from_dataframe(df, columns)
+        sentence_sets, columns = make_sentences_from_dataframe(df, columns)
 
     summaries = []
     # Now we iterate over sentence groups for each column and summarize each
     for i, sentence_set in enumerate(sentence_sets):
 
-        # todo - ugly
-        if group_by:
-            group = sentence_set[0]
-            sentence_set = sentence_set[1]
-
         if split_longer_sentences:
             sentence_set = split_long_sentences(sentence_set, to_split_length)
+        if exclude_misspelled:
+            sentence_set = do_exclude_misspelled(sentence_set)
         # if extract_sibling_sents:
         #     sentence_set = extract_sibling_sentences(sentence_set)
 
@@ -236,13 +234,9 @@ def summarize(data,
         print(DELIMITER + 'Result:')
         print(summary)
 
-        # Optionally include a list of noun phrases
-        if group_by:
-            toappend = [group, summary, []]
-        else:
-            current_column = columns[i] if len(columns) else df.columns[i]
-            toappend = [current_column, summary, []]
+        toappend = [columns[i], summary, []]
 
+        # Optionally include a list of noun phrases
         # todo - ugly
         if use_noun_phrases:
             toappend[2] = extract_noun_phrases(sentence_set)

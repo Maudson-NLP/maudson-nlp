@@ -28,6 +28,7 @@ function doUpload(){
     formData.append('to-split-length', $("#to-split-length").val());
     formData.append('group-by', $("#group-by").val());
     formData.append('extract-sibling-sents', $("#extract-sibling-sents").prop("checked"));
+    formData.append('exclude-misspelled', $("#exclude-misspelled").prop("checked"));
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -43,7 +44,7 @@ function doUpload(){
                 });
                 $('#summarization-result').empty().append($compiled);
             } else {
-                $('#summarization-result').empty().append(xhr.responseText);
+                $('body').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);
             }
 
