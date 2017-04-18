@@ -19,7 +19,7 @@ cwd = os.getcwd() + '/'
 path_to_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0.jar'
 path_to_models_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0-models.jar'
 # stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
-ENCHANT_DICT = enchant.Dict("en_US")
+# ENCHANT_DICT = enchant.Dict("en_US")
 
 
 def make_sentences_from_dataframe(df, columns):

@@ -201,8 +201,8 @@ def summarize(data,
 
         if split_longer_sentences:
             sentence_set = split_long_sentences(sentence_set, to_split_length)
-        if exclude_misspelled:
-            sentence_set = do_exclude_misspelled(sentence_set)
+        # if exclude_misspelled:
+        #     sentence_set = do_exclude_misspelled(sentence_set)
         # if extract_sibling_sents:
         #     sentence_set = extract_sibling_sentences(sentence_set)
 
