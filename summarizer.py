@@ -127,18 +127,25 @@ def sentence_add_loop(vectors, sentences, S, B, L):
 
         new_sentence_length = len(sentences[r].split())
 
-        if total_length + new_sentence_length <= L:
+        # Todo - norm may be zero if sentence only had stopwords
+        norm = scipy.sparse.linalg.norm(vectors[r])
+
+        if total_length + new_sentence_length <= L and norm != 0:
+            b_r = np.divide(vectors[r], norm)
+
             S.add(sentences[r])
-            b_r = np.divide(vectors[r], scipy.sparse.linalg.norm(vectors[r]))
             B.add(b_r)
+
             total_length += new_sentence_length
             # Reset the exceeded_length_count
+
             exceeded_length_count = 0
             # Prevent us from adding this sentence again
             # Todo - original authors had this same problem?
             vectors[r] = np.zeros(vectors[r].shape)
+
         else:
-            print("Sentence too long to add to set")
+            print("Sentence too long to add to set, or sentence consists only of stopwords")
             # Temporary hack to prevent us from choosing this vector again:
             vectors[r] = np.zeros(vectors[r].shape)
 
