@@ -4,6 +4,7 @@ from __future__ import print_function
 import pandas as pd
 import rake
 import json
+import numpy as np
 
 
 def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length, min_keyword_frequency):
@@ -26,8 +27,12 @@ def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length
         int4 (1): min_keyword_frequency, minimum nb of occurences for the keyword in the text.
     '''
     rake_object = rake.Rake(stoppath, int(min_char_length), int(max_words_length), int(min_keyword_frequency))
-    keyphrases = {qst_clean[k]: rake_object.run(srv_concat[k])[:nb_kp] for k in range(len(qst_clean))}
-    keyphrases = {qst:[(kw, "%.2f" % ct) for (kw,ct) in lst] for (qst,lst) in keyphrases.iteritems()}
+    keyphrases = {qst_clean[k]: rake_object.run(srv_concat[k]) for k in range(len(qst_clean))}
+    
+    key_scores = {key:[ct for (kw, ct) in keyphrases[key]] for key in keyphrases.keys()}
+    scaler_dic = {key:{'min':np.min(key_scores[key]),'max':np.max(key_scores[key]), 'delta': np.max(key_scores[key])-np.min(key_scores[key])} for key in keyphrases.keys()}
+    
+    keyphrases = {qst:[(kw, "%.2f" % ((ct-scaler_dic[qst]['min'])/scaler_dic[qst]['delta'])) for (kw,ct) in lst][:nb_kp] for (qst,lst) in keyphrases.iteritems()}    
     
     return keyphrases
 
@@ -50,8 +55,12 @@ def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_lengt
     
 
     rake_object = rake.Rake(stoppath, int(min_char_length), int(max_words_length), int(min_keyword_frequency))
-    keyphrases = {product: rake_object.run(review)[:nb_kp] for (product, review) in product_reviews.iteritems()}
-    keyphrases = {str(product_names[prod]):[(kw, "%.2f" % ct) for (kw,ct) in lst] for (prod,lst) in keyphrases.iteritems()}
+    keyphrases = {product: rake_object.run(review) for (product, review) in product_reviews.iteritems()}
+    
+    key_scores = {key:[ct for (kw, ct) in keyphrases[key]] for key in keyphrases.keys()}
+    scaler_dic = {key:{'min':np.min(key_scores[key]),'max':np.max(key_scores[key]), 'delta': np.max(key_scores[key])-np.min(key_scores[key])} for key in keyphrases.keys()}
+    
+    keyphrases = {str(product_names[prod_id]):[(kw, "%.2f" % ((ct-scaler_dic[prod_id]['min'])/scaler_dic[prod_id]['delta'])) for (kw,ct) in lst][:nb_kp] for (prod_id,lst) in keyphrases.iteritems()}    
     
     return keyphrases
 
