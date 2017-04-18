@@ -94,6 +94,9 @@ def return_keyphrases():
         src = os.getcwd() + '/uploaded_data/'
         file.save(os.path.join(src, file.filename))
     
+    
+    groupby = request.form['groupby']
+    headers = request.form['headers']
     nb_kp = request.form['nb_keyphrases']
     min_char_length = request.form['min_char_length']
     max_words_length = request.form['max_words_length']
@@ -101,22 +104,27 @@ def return_keyphrases():
     dataset_type = request.form['dataset_type']
  
     if dataset_type == 'survey':
-        keyphrases = kp.extract_keyphrases_survey(
+        keyphraz = kp.extract_keyphrases_survey(
                                                filename='uploaded_data/'+file.filename,
                                                nb_kp=nb_kp,
                                                min_char_length=min_char_length,
                                                max_words_length=max_words_length,
-                                               min_keyword_frequency=min_keyword_frequency)
+                                               min_keyword_frequency=min_keyword_frequency,
+                                               groupby=groupby,
+                                               headers=headers)
          
     elif dataset_type == 'reviews':
-        keyphrases = kp.extract_keyphrases_reviews(
+        keyphraz = kp.extract_keyphrases_reviews(
                                                 filename='uploaded_data/'+file.filename,
                                                 nb_kp=nb_kp,
                                                 min_char_length=min_char_length,
                                                 max_words_length=max_words_length,
-                                                min_keyword_frequency=min_keyword_frequency)
+                                                min_keyword_frequency=min_keyword_frequency,
+                                                groupby=groupby,
+                                                headers=headers)
                  
-    return json.dumps(keyphrases)
+    print(keyphraz.keys(), keyphraz[keyphraz.keys()[0]])
+    return json.dumps(keyphraz)
 
 
 def strtobool (val):
