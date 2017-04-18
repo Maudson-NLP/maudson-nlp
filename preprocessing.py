@@ -2,7 +2,7 @@ import os
 import re
 import numpy as np
 import nltk
-import enchant
+# import enchant
 from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
