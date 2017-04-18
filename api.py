@@ -48,7 +48,7 @@ def summarize_route():
     form_split_length = request.form['to-split-length']
     form_group_by = request.form['group-by']
     form_extract_sibling_sents = request.form['extract-sibling-sents']
-    form_exclude_misspelled = request.form['exclude-misspelled']
+    # form_exclude_misspelled = request.form['exclude-misspelled']
 
     ngram_min = int(form_ngram_min)
     ngram_max = int(form_ngram_max)
