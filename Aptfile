@@ -1,4 +1,5 @@
 libffi-dev
+aspell
 enchant-aspell
 aspell-en
 python-enchant
