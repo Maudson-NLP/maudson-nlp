@@ -1,6 +1,6 @@
-python-enchant
-aspell-en
 enchant-aspell
+aspell-en
+python-enchant
 aspell-doc
 spellutils
 wordlist
@@ -11,7 +11,6 @@ spellutils
 wordlist
 emacsen-common
 jed-extra
-hunspell
 openoffice.org-hunspell
 openoffice.org-core
 libenchant-voikko
