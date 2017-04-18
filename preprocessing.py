@@ -1,6 +1,8 @@
 import os
+import re
 import numpy as np
 import nltk
+import enchant
 from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
@@ -17,6 +19,7 @@ cwd = os.getcwd() + '/'
 path_to_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0.jar'
 path_to_models_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0-models.jar'
 # stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
+ENCHANT_DICT = enchant.Dict("en_US")
 
 
 def make_sentences_from_dataframe(df, columns):
@@ -24,24 +27,26 @@ def make_sentences_from_dataframe(df, columns):
 	Concatenate columns of data frame into list of lists of sentences
 	:param df: pd.DataFrame
 	:param columns: list of strings of columns to convert to documents
-	:return: list of lists of sentences
+	:return: list of lists of concatenated sentences for each column, + column names for each sentence list
 	"""
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-	# Strip whitespace from columns - todo: just use indices instead?
+
+	# Strip whitespace from column names
+	df.columns = [col.strip() for col in df.columns]
+
 	if len(columns) == 0:
-		# Just use all columns
-		df.columns = [col.strip() for col in df.columns]
-		columns = df.columns
+		# Just use all string columns
+		columns = [col.strip() for col in df.columns if str(df[col].dtype) == 'object']
+
 	sentence_sets = []
 	for col in columns:
-		if str(df[col].dtype) == 'object':
-			df[col] = df[col].str.replace(eos_regex, r'\1.')
-			text_blob = df[col].str.cat(sep=' ')
-			tokenized = tokenizer.tokenize(text_blob)
-			sentence_sets.append(tokenized)
+		df[col] = df[col].str.replace(eos_regex, r'\1.')
+		text_blob = df[col].str.cat(sep=' ')
+		tokenized = tokenizer.tokenize(text_blob)
+		sentence_sets.append(tokenized)
 
 	print(sentence_sets[0][:2])
-	return np.array(sentence_sets)
+	return np.array(sentence_sets), columns
 
 
 def make_sentences_by_group(df, group_by_col, column):
@@ -53,17 +58,17 @@ def make_sentences_by_group(df, group_by_col, column):
 	:return: List<List<String>> - List of lists of sentences
 	"""
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-	# grouped = df.groupby(group_by_col, as_index=False)
 
 	sentence_sets = []
-	for group in df[group_by_col].unique():
+	unique_groups = df[group_by_col].unique()
+	for group in unique_groups:
 		df[column] = df[column].str.replace(eos_regex, r'\1.')
 		sentences = df[df[group_by_col] == group][column].str.cat(sep=' ')
 		tokenized = tokenizer.tokenize(sentences)
-		sentence_sets.append((group, tokenized))
+		sentence_sets.append(tokenized)
 
 	print(sentence_sets[0][:2])
-	return sentence_sets
+	return sentence_sets, unique_groups
 
 
 def split_long_sentences(sentences, l):
@@ -71,23 +76,23 @@ def split_long_sentences(sentences, l):
 	Split longer sentences so that they don't always take precedence in vector distance computation.
 	Todo - worthy of optimization
 	:param: sentences - list of sentences
-	:param: l - if sentence word count is longer than l, split into two sentences at l
+	:param: l - if sentence word count is longer than l, split into phrases with length l
 	:return: List of split sentences, which will be longer than the input sentences list
 	"""
-	sentence_split_list = []
+
+	def make_chunks(l, n):
+		"""Yield successive n-sized chunks from l."""
+		for i in range(0, len(l), n):
+			yield ' '.join(l[i:i + n])
+
+	sentences_split = []
 	for sentence in sentences:
-		sentence_split = sentence.split()
-		if len(sentence_split) > l:
-			first_half = ' '.join(sentence_split[:l])
-			second_half = ' '.join(sentence_split[l:])
-			sentence_split_list.append(first_half)
-			sentence_split_list.append(second_half)
-		else:
-			sentence_split_list.append(sentence)
+		chunks = list(make_chunks(sentence.split(), l))
+		sentences_split += chunks
 
 	print(DELIMITER + 'After sentence splitting:')
-	print(sentence_split_list[:2])
-	return sentence_split_list
+	print(sentences_split[:2])
+	return sentences_split
 
 
 def extract_sibling_sentences(sentences):
@@ -96,6 +101,8 @@ def extract_sibling_sentences(sentences):
 	:param sentences: List<String> of sentences to extract from
 	:return: List<String> of all sub sentences
 	'''
+	# todo
+
 	parsed_sents = [list(stan_parser.raw_parse(sent))[0] for sent in sentences]
 	sub_sents = []
 	for sent in parsed_sents:
@@ -110,11 +117,19 @@ def extract_sibling_sentences(sentences):
 	return sub_sents
 
 
-def do_spellcheck(sentences):
+def do_exclude_misspelled(sentences):
 	sentences_spellchecked = []
 	for sentence in sentences:
-		b = TextBlob(sentence)
-		sentences_spellchecked.append(b.correct())
+		for w in word_tokenize(sentence):
+			if ENCHANT_DICT.check(w) == False:
+
+				sentence.replace(w, '')
+
+		# Make sure we didn't remove all words from the vector
+		pattern = re.compile(r'\S')
+		if pattern.match(sentence):
+			sentences_spellchecked.append(sentence)
+
 	return sentences_spellchecked
 
 

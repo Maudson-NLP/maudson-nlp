@@ -31,12 +31,17 @@
                 </div>
 
                 <div class="summarization-upload__input">
-                    If each row corresponds to different product, name of ID column on which to group:
+                     ID column on which to group (e.g. productID):
                     <input id="group-by" />
                 </div>
 
                 <button id="show-advanced">Advanced Options</button>
                 <div id="advanced-options">
+
+                    <div class="summarization-upload__input">
+                        Exclude misspelled words?
+                        <input id="exclude-misspelled" type="checkbox" />
+                    </div>
 
                     <div class="summarization-upload__input">
                         Split longer sentences?
@@ -49,7 +54,7 @@
                     </div>
 
                     <div>
-                        Extract subordinate clauses? (slow)
+                        Extract subordinate clauses? (unimplemented - wip)
                         <input id="extract-sibling-sents" type="checkbox" />
                     </div>
 
