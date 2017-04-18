@@ -48,7 +48,7 @@ def summarize_route():
     form_split_length = request.form['to-split-length']
     form_group_by = request.form['group-by']
     form_extract_sibling_sents = request.form['extract-sibling-sents']
-    form_exclude_misspelled = request.form['exclude-misspelled']
+    # form_exclude_misspelled = request.form['exclude-misspelled']
 
     ngram_min = int(form_ngram_min)
     ngram_max = int(form_ngram_max)
@@ -60,7 +60,7 @@ def summarize_route():
     use_noun_phrases = strtobool(form_use_noun_phrases)
     split_longer_sentences = strtobool(form_split_longer_sentences)
     extract_sibling_sents = strtobool(form_extract_sibling_sents)
-    exclude_misspelled = strtobool(form_exclude_misspelled)
+    # exclude_misspelled = strtobool(form_exclude_misspelled)
 
     summary = summarize(
         l=l,
@@ -71,7 +71,7 @@ def summarize_route():
         use_noun_phrases=use_noun_phrases,
         split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length),
         extract_sibling_sents=extract_sibling_sents,
-        exclude_misspelled=exclude_misspelled
+        exclude_misspelled=False
     )
 
     return json.dumps(summary)
