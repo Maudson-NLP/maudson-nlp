@@ -4,7 +4,7 @@ import sklearn
 import pandas as pd
 import scipy.sparse
 import sklearn.metrics.pairwise
-from sklearn.preprocessing import MaxAbsScaler
+from sklearn.preprocessing import Normalizer
 from scipy.sparse import csr_matrix
 from preprocessing import *
 
@@ -219,8 +219,8 @@ def summarize(data,
         vectors = vectorize(vectors, ngram_range=ngram_range, tfidf=tfidf)
 
         if scale_vectors:
-            scaler = MaxAbsScaler()
-            vectors = scaler.fit_transform(vectors)
+            normalizer = Normalizer()
+            vectors = normalizer.fit_transform(vectors)
 
         if use_svd:
             vectors = vectors.asfptype()
