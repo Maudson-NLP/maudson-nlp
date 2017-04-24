@@ -101,13 +101,24 @@
         <div id="keywords__container">
 
             <h3>Keyphrase extraction</h3><br>
-
-            <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
+            Excel file
+            <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br><br>
+            
+                        
+            <div>
+                Reviews Dataset ? Check if yes.
+                <input id="dataset_reviews" type="checkbox" />
+            </div><br>
+            
             <div class="keyphrase_params">
-                How many keyphrases per question?
-                <input id="nb_keyphrases" type="number" value="10" />
+                <b>Keyphrases selection</b><br>
+                    - A parameter k > 0.99 will select the top k keyphrases<br>
+                    - A parameter k < 1 will select all keyphrases with a relevance score > k <br>
+                Set k equals to <input id="nb_keyphrases" type="number" value="10" />
             </div><br>
 
+            
+            <b>Headers and Groupby</b><br>
             <div class="keyphrase_params">
                 Headers of columns to extract keyphrases from, separated by "%" (defaults to all columns):
                 <input id="headers" />
@@ -118,30 +129,35 @@
                 <input id="groupby" />
             </div><br>
 
-            <div> Advanced parameters </div><br>
-            <div class="keyphrase_params">
-                Minimum number of characters per word
-                <input id="min_char_length" type="number" value="1" />
-            </div>
-            <div class="keyphrase_params">
-                Maximum number of words per keyphrase
-                <input id="max_words_length" type="number" value="5" />
-            </div>
-            <div class="keyphrase_params">
-                Minimum frequency for the keyphrase in the text
-                <input id="min_keyword_frequency" type="number" value="1" />
-            </div>
 
-            <div>
-                Reviews Dataset ?
-                <input id="dataset_reviews" type="checkbox" />
+            <button id="show-advanced_kp", onclick="togg()">Advanced Parameters</button>
+            
+            <div id="advanced-options_kp">
+                <div class="keyphrase_params">
+                    Minimum number of characters per word
+                    <input id="min_char_length" type="number" value="1" />
+                </div>
+                <div class="keyphrase_params">
+                    Maximum number of words per keyphrase
+                    <input id="max_words_length" type="number" value="5" />
+                </div>
+                <div class="keyphrase_params">
+                    Minimum frequency for the keyphrase in the text
+                    <input id="min_keyword_frequency" type="number" value="1" />
+                </div>
             </div>
+    
 
             <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
             <div id="result_keyphrase"></div>
 
         </div>
-
+        
+        <script>
+        function togg(){
+            $('#advanced-options_kp').toggle();
+        });
+        </script>
         <script>
         
         function doUpload_keyphrase(){
