@@ -130,7 +130,7 @@
             </div><br>
 
 
-            <button id="show-advanced_kp", onclick="togg()">Advanced Parameters</button>
+            <button id="show-advanced_kp">Advanced Parameters</button>
             
             <div id="advanced-options_kp">
                 <div class="keyphrase_params">
@@ -154,8 +154,10 @@
         </div>
         
         <script>
-        function togg(){
-            $('#advanced-options_kp').toggle();
+        $(function(){
+            $('#show-advanced_kp').on('click', function(){
+               $('#advanced-options_kp').toggle();
+            });
         });
         </script>
         <script>
