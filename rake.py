@@ -136,6 +136,7 @@ def spell_check(phrase_list):
                 
     
     return phrase_list
+
 def stem_candidate_keywords(phrase_list):
     
     stemmer = stem.PorterStemmer()

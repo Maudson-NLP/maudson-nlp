@@ -81,7 +81,6 @@ def summarize_route():
 @app.route('/keyphrases', methods=['GET', 'POST'])
 def return_keyphrases():
     
-    print request.files
     if 'file-keyphrase' not in request.files:
         return 'no file provided'
     file = request.files['file-keyphrase']
@@ -123,7 +122,6 @@ def return_keyphrases():
                                                 groupby=groupby,
                                                 headers=headers)
                  
-    print(keyphraz.keys(), keyphraz[keyphraz.keys()[0]])
     return json.dumps(keyphraz)
 
 
