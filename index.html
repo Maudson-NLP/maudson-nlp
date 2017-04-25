@@ -114,12 +114,13 @@
             
             <b>Headers and Groupby</b><br>
             <div class="keyphrase_params">
-                Headers of columns to extract keyphrases from, separated by "%" (defaults to all columns):
+                Headers of columns to extract keyphrases from, separated by "%"
+                (defaults to all columns):
                 <input id="headers" />
             </div>
 
             <div class="keyphrase_params">
-                If relevant to the dataset; Name of the column on which to group:
+                If relevant to the dataset, ID column on which to group (e.g. productID):
                 <input id="groupby" />
             </div><br>
 
@@ -128,20 +129,21 @@
             
             <div id="advanced-options_kp">
             <b>Advanced parameters</b><br>
+                <i>(4,4,2) proved to provide the most accurate results</i><br>
                 <div class="keyphrase_params">
-                    Minimum number of characters per word
-                    <input id="min_char_length" type="number" value="1" />
+                    Minimum number of characters per word in a keyphrase:
+                    <input id="min_char_length" type="number" value="4" />
                 </div>
                 <div class="keyphrase_params">
-                    Maximum number of words per keyphrase
-                    <input id="max_words_length" type="number" value="3" />
+                    Maximum number of words per keyphrase:
+                    <input id="max_words_length" type="number" value="4" />
                 </div>
                 <div class="keyphrase_params">
-                    Minimum frequency for the keyphrase in the text
-                    <input id="min_keyword_frequency" type="number" value="1" />
+                    Minimum frequency for the keyphrase in the text:
+                    <input id="min_keyword_frequency" type="number" value="2" />
                 </div>
             </div>
-    
+            <br>
 
             <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
             <div id="result_keyphrase"></div>
