@@ -104,12 +104,6 @@
             Excel file
             <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br><br>
             
-                        
-            <div>
-                Reviews Dataset ? Check if yes.
-                <input id="dataset_reviews" type="checkbox" />
-            </div><br>
-            
             <div class="keyphrase_params">
                 <b>Keyphrases selection</b><br>
                     - A parameter k > 0.99 will select the top k keyphrases<br>
@@ -125,7 +119,7 @@
             </div>
 
             <div class="keyphrase_params">
-                If relevant to the dataset, ID column on which to group (default productID):
+                If relevant to the dataset; Name of the column on which to group:
                 <input id="groupby" />
             </div><br>
 
@@ -140,7 +134,7 @@
                 </div>
                 <div class="keyphrase_params">
                     Maximum number of words per keyphrase
-                    <input id="max_words_length" type="number" value="5" />
+                    <input id="max_words_length" type="number" value="3" />
                 </div>
                 <div class="keyphrase_params">
                     Minimum frequency for the keyphrase in the text
@@ -157,7 +151,7 @@
         <script>
         
         function doUpload_keyphrase(){
-            $('#result_keyphrase').text('Extracting keyphrases...');
+            $('#result_keyphrase').text('Extracting keyphrases... If it takes more than a few minutes on a file smaller than 1Mb, there must be a problem in your parameter setting :) ');
             
             var fileInput = document.getElementById('the-file-keyphrase');
             var file = fileInput.files[0];
@@ -171,13 +165,6 @@
             formData.append('max_words_length', $("#max_words_length").val());
             formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
             
-
-            if (document.getElementById('dataset_reviews').checked){
-                formData.append('dataset_type', 'reviews')
-            }
-            else{
-                formData.append('dataset_type', 'survey')
-            }
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE) {
