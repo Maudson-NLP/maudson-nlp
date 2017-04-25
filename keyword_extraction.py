@@ -31,7 +31,7 @@ def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length
         Arguments:
         stoppath: path to the list of stopwords
         int1 (1): min_char_length, minimum number of characters per word
-        int2 (5): max_words_length, maximum number of words per keyphrase
+        int2 (3): max_words_length, maximum number of words per keyphrase
         int4 (1): min_keyword_frequency, minimum nb of occurences for the keyword in the text.
     '''
     rake_object = rake.Rake(stoppath, int(min_char_length), int(max_words_length), int(min_keyword_frequency))

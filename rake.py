@@ -18,6 +18,7 @@ import six
 from six.moves import range
 from nltk import stem
 import json
+import numpy as np
 
 debug = False
 test = False
@@ -80,23 +81,34 @@ def build_stop_word_regex(stop_word_file_path):
     return stop_word_pattern
 
 
-def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, max_words_length=5):
+
+def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, max_words_length=5, min_keyphrase_frequency =1):
     phrase_list = []
+    raw_list = []
     for s in sentence_list:
         tmp = re.sub(stopword_pattern, '|', s.strip())
         phrases = tmp.split("|")
         for phrase in phrases:
             phrase = phrase.strip().lower()
-            if phrase != "" and is_acceptable(phrase, min_char_length, max_words_length):
-                phrase_list.append(phrase)
+            raw_list.append(phrase)
+    for phraz in raw_list:
+        if phraz != "" and is_acceptable(phraz, min_char_length, max_words_length):
+                if min_keyphrase_frequency > 1 and raw_list.count(phraz) < min_keyphrase_frequency:
+                    continue
+                else:
+                    phrase_list.append(phraz)
+            
     return phrase_list
+
 
 
 def is_acceptable(phrase, min_char_length, max_words_length):
 
+    words = phrase.split()
     # a phrase must have a min length in characters
-    if len(phrase) < min_char_length:
-        return 0
+    for word in words: 
+        if len(word) < min_char_length:
+            return 0
 
     # a phrase must have a max number of words
     words = phrase.split()
@@ -119,6 +131,8 @@ def is_acceptable(phrase, min_char_length, max_words_length):
     if digits > alpha:
         return 0
     return 1
+
+
 
 def spell_check(sentence_list):
     
@@ -227,6 +241,8 @@ def handle_neg_list(sentence_list):
         sent_handle_neg.append(handle_neg(candidate))
     return sent_handle_neg
 
+
+
 def stem_candidate_keywords(phrase_list):
     
     stemmer = stem.PorterStemmer()
@@ -262,25 +278,36 @@ def stem_candidate_keywords(phrase_list):
     return final_list, phrase_list_stem, track_stem
 
 
-def calculate_word_frequency(phraseList):
+def calculate_word_metrics(phraseList):
     word_frequency = {}
+    word_degree = {}
+    word_score = {}
     for phrase in phraseList:
         
         word_list = separate_words(phrase, 0)
+        
         for word in word_list:
             word_frequency.setdefault(word, 0)
             word_frequency[word] += 1
+            
+            word_degree.setdefault(word, 0)
+            word_degree[word] += len(word_list) - 1
 
-    return word_frequency
+    for word in word_frequency.keys():
+        word_score.setdefault(word, 0)
+        if word_degree[word] != 0:
+            word_score[word] = word_frequency[word] / np.power(word_degree[word], 0.7)
+        else:
+            word_score[word] = word_frequency[word]
+            
+    return word_score
 
 
-def generate_candidate_keyword_scores(final_list, word_frequency, track_stem, min_keyword_frequency=1):
+def generate_candidate_keyword_scores(final_list, word_frequency, track_stem):
     keyword_candidates = {}
     for phrase in final_list:
         phrase_stem = track_stem[phrase]
-        if min_keyword_frequency > 1:
-            if final_list.count(phrase) < min_keyword_frequency:
-                continue
+
         keyword_candidates.setdefault(phrase, 0)
         word_list = separate_words(phrase_stem, 0)
         candidate_score = 0
@@ -291,12 +318,12 @@ def generate_candidate_keyword_scores(final_list, word_frequency, track_stem, mi
 
 
 class Rake(object):
-    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5, min_keyword_frequency=1):
+    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5, min_keyphrase_frequency=1):
         self.__stop_words_path = stop_words_path
         self.__stop_words_pattern = build_stop_word_regex(stop_words_path)
         self.__min_char_length = min_char_length
         self.__max_words_length = max_words_length
-        self.__min_keyword_frequency = min_keyword_frequency
+        self.__min_keyphrase_frequency = min_keyphrase_frequency
 
     def run(self, text):
         sentence_list = split_sentences(text)
@@ -305,13 +332,13 @@ class Rake(object):
         
         sentence_list_neg_melt = handle_neg_list(sentence_list_check)
         
-        phrase_list = generate_candidate_keywords(sentence_list_neg_melt, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length)
+        phrase_list = generate_candidate_keywords(sentence_list_neg_melt, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length, self.__min_keyphrase_frequency)
                 
         final_list, phrase_list_stem, track_stem = stem_candidate_keywords(phrase_list)
 
-        word_frequency = calculate_word_frequency(phrase_list_stem)
+        word_frequency = calculate_word_metrics(phrase_list_stem)
 
-        keyword_candidates = generate_candidate_keyword_scores(final_list, word_frequency, track_stem, self.__min_keyword_frequency)
+        keyword_candidates = generate_candidate_keyword_scores(final_list, word_frequency, track_stem)
 
         sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
         return sorted_keywords

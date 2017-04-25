@@ -100,9 +100,8 @@ def return_keyphrases():
     min_char_length = request.form['min_char_length']
     max_words_length = request.form['max_words_length']
     min_keyword_frequency = request.form['min_keyword_frequency']
-    dataset_type = request.form['dataset_type']
  
-    if dataset_type == 'survey':
+    if len(groupby) == 0:
         keyphraz = kp.extract_keyphrases_survey(
                                                filename='uploaded_data/'+file.filename,
                                                nb_kp=nb_kp,
@@ -112,7 +111,7 @@ def return_keyphrases():
                                                groupby=groupby,
                                                headers=headers)
          
-    elif dataset_type == 'reviews':
+    elif len(groupby) != 0:
         keyphraz = kp.extract_keyphrases_reviews(
                                                 filename='uploaded_data/'+file.filename,
                                                 nb_kp=nb_kp,
