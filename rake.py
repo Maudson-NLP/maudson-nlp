@@ -82,7 +82,7 @@ def build_stop_word_regex(stop_word_file_path):
 
 
 
-def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, max_words_length=5, min_keyphrase_frequency =1):
+def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length=1, min_words_length=1, max_words_length=3, min_keyphrase_frequency =1):
     phrase_list = []
     raw_list = []
     for s in sentence_list:
@@ -92,7 +92,7 @@ def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length
             phrase = phrase.strip().lower()
             raw_list.append(phrase)
     for phraz in raw_list:
-        if phraz != "" and is_acceptable(phraz, min_char_length, max_words_length):
+        if phraz != "" and is_acceptable(phraz, min_char_length, min_words_length, max_words_length):
                 if min_keyphrase_frequency > 1 and raw_list.count(phraz) < min_keyphrase_frequency:
                     continue
                 else:
@@ -102,7 +102,7 @@ def generate_candidate_keywords(sentence_list, stopword_pattern, min_char_length
 
 
 
-def is_acceptable(phrase, min_char_length, max_words_length):
+def is_acceptable(phrase, min_char_length, min_words_length, max_words_length):
 
     words = phrase.split()
     # a phrase must have a min length in characters
@@ -112,7 +112,7 @@ def is_acceptable(phrase, min_char_length, max_words_length):
 
     # a phrase must have a max number of words
     words = phrase.split()
-    if len(words) > max_words_length:
+    if len(words) > max_words_length or len(words) < min_words_length:
         return 0
 
     digits = 0
@@ -318,10 +318,11 @@ def generate_candidate_keyword_scores(final_list, word_frequency, track_stem):
 
 
 class Rake(object):
-    def __init__(self, stop_words_path, min_char_length=1, max_words_length=5, min_keyphrase_frequency=1):
+    def __init__(self, stop_words_path, min_char_length=1, min_words_length = 1, max_words_length=3, min_keyphrase_frequency=1):
         self.__stop_words_path = stop_words_path
         self.__stop_words_pattern = build_stop_word_regex(stop_words_path)
         self.__min_char_length = min_char_length
+        self.__min_words_length = min_words_length
         self.__max_words_length = max_words_length
         self.__min_keyphrase_frequency = min_keyphrase_frequency
 
@@ -332,7 +333,7 @@ class Rake(object):
         
         sentence_list_neg_melt = handle_neg_list(sentence_list_check)
         
-        phrase_list = generate_candidate_keywords(sentence_list_neg_melt, self.__stop_words_pattern, self.__min_char_length, self.__max_words_length, self.__min_keyphrase_frequency)
+        phrase_list = generate_candidate_keywords(sentence_list_neg_melt, self.__stop_words_pattern, self.__min_char_length, self.__min_words_length, self.__max_words_length, self.__min_keyphrase_frequency)
                 
         final_list, phrase_list_stem, track_stem = stem_candidate_keywords(phrase_list)
 

@@ -129,14 +129,13 @@
             
             <div id="advanced-options_kp">
             <b>Advanced parameters</b><br>
-                <i>(4,4,2) proved to provide the most accurate results</i><br>
                 <div class="keyphrase_params">
                     Minimum number of characters per word in a keyphrase:
                     <input id="min_char_length" type="number" value="4" />
                 </div>
                 <div class="keyphrase_params">
-                    Maximum number of words per keyphrase:
-                    <input id="max_words_length" type="number" value="4" />
+                    Number of words per keyphrase:<br>
+                    <i>Min:</i> <input id="min_words_length" type="number" value="1" /> <i>Max:</i> <input id="max_words_length" type="number" value="3" />
                 </div>
                 <div class="keyphrase_params">
                     Minimum frequency for the keyphrase in the text:
@@ -165,6 +164,7 @@
             formData.append('nb_keyphrases', $("#nb_keyphrases").val());
             formData.append('min_char_length', $("#min_char_length").val());
             formData.append('max_words_length', $("#max_words_length").val());
+            formData.append('min_words_length', $("#min_words_length").val());
             formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
             
             var xhr = new XMLHttpRequest();
@@ -175,7 +175,7 @@
                     var $compiled = $('#keyphrases--template').tmpl({
                                                                     keyphraz: json}
                                                                     );
-                                                                    $('#result_keyphrase').empty().append($compiled);
+                    $('#result_keyphrase').empty().append($compiled);
                 }
             };
             
