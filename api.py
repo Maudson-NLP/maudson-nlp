@@ -99,6 +99,7 @@ def return_keyphrases():
     nb_kp = request.form['nb_keyphrases']
     min_char_length = request.form['min_char_length']
     max_words_length = request.form['max_words_length']
+    min_words_length = request.form['min_words_length']
     min_keyword_frequency = request.form['min_keyword_frequency']
  
     if len(groupby) == 0:
@@ -107,6 +108,7 @@ def return_keyphrases():
                                                nb_kp=nb_kp,
                                                min_char_length=min_char_length,
                                                max_words_length=max_words_length,
+                                               min_words_length=min_words_length,
                                                min_keyword_frequency=min_keyword_frequency,
                                                groupby=groupby,
                                                headers=headers)
@@ -117,6 +119,7 @@ def return_keyphrases():
                                                 nb_kp=nb_kp,
                                                 min_char_length=min_char_length,
                                                 max_words_length=max_words_length,
+                                                min_words_length=min_words_length,
                                                 min_keyword_frequency=min_keyword_frequency,
                                                 groupby=groupby,
                                                 headers=headers)
