@@ -27,8 +27,11 @@ function doUpload(){
     formData.append('split-longer-sentences', $("#split-longer-sentences").prop("checked"));
     formData.append('to-split-length', $("#to-split-length").val());
     formData.append('group-by', $("#group-by").val());
-    formData.append('extract-sibling-sents', $("#extract-sibling-sents").prop("checked"));
-    formData.append('exclude-misspelled', $("#exclude-misspelled").prop("checked"));
+    // Local Only Features
+    // formData.append('extract-sibling-sents', $("#extract-sibling-sents").prop("checked"));
+    // formData.append('exclude-misspelled', $("#exclude-misspelled").prop("checked"));
+    formData.append('extract-sibling-sents', false);
+    formData.append('exclude-misspelled', false);
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
