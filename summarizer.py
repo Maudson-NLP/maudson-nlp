@@ -1,3 +1,9 @@
+# Implementation of Semantic Volume Maximization
+# as specified by:
+# Yogatama, Dani et al. 2015.
+# Extractive Summarization by Maximizing Semantic Volume.
+# Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing: 1961-1966. September, 2015.
+
 import scipy
 import logging
 import sklearn
@@ -183,7 +189,7 @@ def summarize(data,
     :param extract_sibling_sents: Boolean - whether to split sentences into individual siblings as defined by adjacent S tags in nltk parse tree
     :param split_long_sentences: Boolean - whether to split longer sentences into shorter ones to prevent bias in distance calculation
     :param to_split_length: Integer - Length above which to split sentences
-    :return: List of summary strings
+    :return: List of lists of summary sentences
     """
     if type(data) == str or type(data) == unicode:
         data_dir = './uploaded_data/'
@@ -197,21 +203,20 @@ def summarize(data,
 
     print(DELIMITER + 'Raw sentences:')
     if group_by:
-        # todo - only one column supported for grouped summarization
         sentence_sets, columns = make_sentences_by_group(df, group_by, columns[0])
     else:
         sentence_sets, columns = make_sentences_from_dataframe(df, columns)
 
     summaries = []
-    # Now we iterate over sentence groups for each column and summarize each
+    # Iterate over sentence groups for each column and summarize each
     for i, sentence_set in enumerate(sentence_sets):
 
         if split_longer_sentences:
             sentence_set = split_long_sentences(sentence_set, to_split_length)
-        # if exclude_misspelled:
-        #     sentence_set = do_exclude_misspelled(sentence_set)
-        # if extract_sibling_sents:
-        #     sentence_set = extract_sibling_sentences(sentence_set)
+        if exclude_misspelled:
+            sentence_set = do_exclude_misspelled(sentence_set)
+        if extract_sibling_sents:
+            sentence_set = extract_sibling_sentences(sentence_set)
 
         vectors = do_lemmatization(sentence_set)
         vectors = remove_stopword_bigrams(vectors)
@@ -226,6 +231,7 @@ def summarize(data,
             vectors = vectors.asfptype()
 
             if k >= min(vectors.shape):
+                print("k too small for vectors shape, lowering...")
                 k = min(vectors.shape) - 1
                 
             U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
@@ -243,7 +249,6 @@ def summarize(data,
 
         toappend = [columns[i], summary, []]
 
-        # Optionally include a list of noun phrases
         # todo - ugly
         if use_noun_phrases:
             toappend[2] = extract_noun_phrases(sentence_set)

@@ -2,13 +2,15 @@ import os
 import re
 import numpy as np
 import nltk
-# import enchant
 from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
-# from nltk.parse.stanford import StanfordParser
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
+# Comment these two lines to run on Heroku
+import enchant
+from nltk.parse.stanford import StanfordParser
 
 
 DELIMITER = '\n' + '*' * 30 + ' '
@@ -18,8 +20,10 @@ eos_regex = r',?\s*([^.])$'
 cwd = os.getcwd() + '/'
 path_to_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0.jar'
 path_to_models_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0-models.jar'
-# stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
-# ENCHANT_DICT = enchant.Dict("en_US")
+
+# Comment these two lines to run on Heroku
+stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
+ENCHANT_DICT = enchant.Dict("en_US")
 
 
 def make_sentences_from_dataframe(df, columns):
@@ -130,6 +134,8 @@ def do_exclude_misspelled(sentences):
 		if pattern.match(sentence):
 			sentences_spellchecked.append(sentence)
 
+	print(DELIMITER + 'After excluding misspelled:')
+	print(sentences_spellchecked[:2])
 	return sentences_spellchecked
 
 
