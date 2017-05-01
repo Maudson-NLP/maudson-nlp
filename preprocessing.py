@@ -9,8 +9,8 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 # Comment these two lines to run on Heroku
-import enchant
-from nltk.parse.stanford import StanfordParser
+# import enchant
+# from nltk.parse.stanford import StanfordParser
 
 
 DELIMITER = '\n' + '*' * 30 + ' '
@@ -22,8 +22,8 @@ path_to_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0.jar'
 path_to_models_jar = cwd + 'StanfordCoreNLP/stanford-corenlp-3.2.0-models.jar'
 
 # Comment these two lines to run on Heroku
-stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
-ENCHANT_DICT = enchant.Dict("en_US")
+# stan_parser = StanfordParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
+# ENCHANT_DICT = enchant.Dict("en_US")
 
 
 def make_sentences_from_dataframe(df, columns):

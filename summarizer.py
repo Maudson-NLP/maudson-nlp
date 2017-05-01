@@ -235,7 +235,6 @@ def summarize(data,
                 k = min(vectors.shape) - 1
                 
             U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
-            print(s)
 
             print(DELIMITER + 'After SVD:')
             print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
