@@ -296,14 +296,14 @@ def calculate_word_metrics(phraseList):
     for word in word_frequency.keys():
         word_score.setdefault(word, 0)
         if word_degree[word] != 0:
-            word_score[word] = word_frequency[word] / np.power(word_degree[word], 0.7)
+            word_score[word] = word_frequency[word] / np.power(word_degree[word], 0.8)
         else:
             word_score[word] = word_frequency[word]
             
     return word_score
 
 
-def generate_candidate_keyword_scores(final_list, word_frequency, track_stem):
+def generate_candidate_keyword_scores(final_list, word_scores, track_stem):
     keyword_candidates = {}
     for phrase in final_list:
         phrase_stem = track_stem[phrase]
@@ -312,7 +312,7 @@ def generate_candidate_keyword_scores(final_list, word_frequency, track_stem):
         word_list = separate_words(phrase_stem, 0)
         candidate_score = 0
         for word in word_list:
-            candidate_score += word_frequency[word]
+            candidate_score += word_scores[word]
         keyword_candidates[phrase] = float(candidate_score) / len(word_list)
     return keyword_candidates
 
@@ -337,9 +337,9 @@ class Rake(object):
                 
         final_list, phrase_list_stem, track_stem = stem_candidate_keywords(phrase_list)
 
-        word_frequency = calculate_word_metrics(phrase_list_stem)
+        word_scores = calculate_word_metrics(phrase_list_stem)
 
-        keyword_candidates = generate_candidate_keyword_scores(final_list, word_frequency, track_stem)
+        keyword_candidates = generate_candidate_keyword_scores(final_list, word_scores, track_stem)
 
         sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
         return sorted_keywords
