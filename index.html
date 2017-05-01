@@ -101,51 +101,58 @@
         <div id="keywords__container">
 
             <h3>Keyphrase extraction</h3><br>
-
-            <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br>
+            Excel file
+            <input id="the-file-keyphrase" name="file-keyphrase" type="file" /><br><br>
+            
             <div class="keyphrase_params">
-                How many keyphrases per question?
-                <input id="nb_keyphrases" type="number" value="10" />
+                <b>Keyphrases selection</b><br>
+                    - A parameter k > 0.99 will select the top k keyphrases<br>
+                    - A parameter k < 1 will select all keyphrases with a relevance score > k <br>
+                Set k equals to <input id="nb_keyphrases" type="number" value="10" />
             </div><br>
 
+            
+            <b>Headers and Groupby</b><br>
             <div class="keyphrase_params">
-                Headers of columns to extract keyphrases from, separated by "%" (defaults to all columns):
+                Headers of columns to extract keyphrases from, separated by "%"
+                (defaults to all columns):
                 <input id="headers" />
             </div>
 
             <div class="keyphrase_params">
-                If relevant to the dataset, ID column on which to group (default productID):
+                If relevant to the dataset, ID column on which to group (e.g. productID):
                 <input id="groupby" />
             </div><br>
 
-            <div> Advanced parameters </div><br>
-            <div class="keyphrase_params">
-                Minimum number of characters per word
-                <input id="min_char_length" type="number" value="1" />
-            </div>
-            <div class="keyphrase_params">
-                Maximum number of words per keyphrase
-                <input id="max_words_length" type="number" value="5" />
-            </div>
-            <div class="keyphrase_params">
-                Minimum frequency for the keyphrase in the text
-                <input id="min_keyword_frequency" type="number" value="1" />
-            </div>
 
-            <div>
-                Reviews Dataset ?
-                <input id="dataset_reviews" type="checkbox" />
+            <!-- <button id="show-advanced_kp">Advanced Parameters</button> -->
+            
+            <div id="advanced-options_kp">
+            <b>Advanced parameters</b><br>
+                <div class="keyphrase_params">
+                    Minimum number of characters per word in a keyphrase:
+                    <input id="min_char_length" type="number" value="4" />
+                </div>
+                <div class="keyphrase_params">
+                    Number of words per keyphrase:<br>
+                    <i>Min:</i> <input id="min_words_length" type="number" value="1" /> <i>Max:</i> <input id="max_words_length" type="number" value="3" />
+                </div>
+                <div class="keyphrase_params">
+                    Minimum frequency for the keyphrase in the text:
+                    <input id="min_keyword_frequency" type="number" value="2" />
+                </div>
             </div>
+            <br>
 
             <button onclick="doUpload_keyphrase()">Extract keyphrases</button><br><br>
             <div id="result_keyphrase"></div>
 
         </div>
-
+        
         <script>
         
         function doUpload_keyphrase(){
-            $('#result_keyphrase').text('Extracting keyphrases...');
+            $('#result_keyphrase').text('Extracting keyphrases... If it takes more than a few minutes on a file smaller than 1Mb, there must be a problem in your parameter setting :) ');
             
             var fileInput = document.getElementById('the-file-keyphrase');
             var file = fileInput.files[0];
@@ -157,15 +164,9 @@
             formData.append('nb_keyphrases', $("#nb_keyphrases").val());
             formData.append('min_char_length', $("#min_char_length").val());
             formData.append('max_words_length', $("#max_words_length").val());
+            formData.append('min_words_length', $("#min_words_length").val());
             formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
             
-
-            if (document.getElementById('dataset_reviews').checked){
-                formData.append('dataset_type', 'reviews')
-            }
-            else{
-                formData.append('dataset_type', 'survey')
-            }
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == XMLHttpRequest.DONE) {
@@ -174,7 +175,7 @@
                     var $compiled = $('#keyphrases--template').tmpl({
                                                                     keyphraz: json}
                                                                     );
-                                                                    $('#result_keyphrase').empty().append($compiled);
+                    $('#result_keyphrase').empty().append($compiled);
                 }
             };
             
