@@ -81,7 +81,6 @@ def summarize_route():
 @app.route('/keyphrases', methods=['GET', 'POST'])
 def return_keyphrases():
     
-    print request.files
     if 'file-keyphrase' not in request.files:
         return 'no file provided'
     file = request.files['file-keyphrase']
@@ -100,30 +99,31 @@ def return_keyphrases():
     nb_kp = request.form['nb_keyphrases']
     min_char_length = request.form['min_char_length']
     max_words_length = request.form['max_words_length']
+    min_words_length = request.form['min_words_length']
     min_keyword_frequency = request.form['min_keyword_frequency']
-    dataset_type = request.form['dataset_type']
  
-    if dataset_type == 'survey':
+    if len(groupby) == 0:
         keyphraz = kp.extract_keyphrases_survey(
                                                filename='uploaded_data/'+file.filename,
                                                nb_kp=nb_kp,
                                                min_char_length=min_char_length,
                                                max_words_length=max_words_length,
+                                               min_words_length=min_words_length,
                                                min_keyword_frequency=min_keyword_frequency,
                                                groupby=groupby,
                                                headers=headers)
          
-    elif dataset_type == 'reviews':
+    elif len(groupby) != 0:
         keyphraz = kp.extract_keyphrases_reviews(
                                                 filename='uploaded_data/'+file.filename,
                                                 nb_kp=nb_kp,
                                                 min_char_length=min_char_length,
                                                 max_words_length=max_words_length,
+                                                min_words_length=min_words_length,
                                                 min_keyword_frequency=min_keyword_frequency,
                                                 groupby=groupby,
                                                 headers=headers)
                  
-    print(keyphraz.keys(), keyphraz[keyphraz.keys()[0]])
     return json.dumps(keyphraz)
 
 
