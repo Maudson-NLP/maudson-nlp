@@ -342,5 +342,6 @@ class Rake(object):
         keyword_candidates = generate_candidate_keyword_scores(final_list, word_scores, track_stem)
 
         sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
+        
         return sorted_keywords
 
