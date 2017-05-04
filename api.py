@@ -12,12 +12,12 @@ app = Flask(__name__, static_url_path='', static_folder='.')
 
 
 @app.route('/')
-#@auth.requires_auth
+@auth.requires_auth
 def root():
     return app.send_static_file('index.html')
 
 @app.route('/index.html')
-#@auth.requires_auth
+@auth.requires_auth
 def rootbis():
     return app.send_static_file('index.html')
 
