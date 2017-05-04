@@ -119,6 +119,8 @@ def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_lengt
     
     keyphraz = collections.OrderedDict([(col, keyphraz[col]) for col in columns_to_extract])
     
+    a=0
+    
     return keyphraz
 
 
