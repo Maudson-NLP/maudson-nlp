@@ -2,8 +2,9 @@ import os
 import nltk
 import json
 from flask import Flask
-from flask import request
+from flask import request, send_file
 from summarizer import summarize
+import pandas as pd
 import keyword_extraction as kp
 import auth
 
@@ -107,6 +108,7 @@ def return_keyphrases():
     max_words_length = request.form['max_words_length']
     min_words_length = request.form['min_words_length']
     min_keyword_frequency = request.form['min_keyword_frequency']
+    tradeoff = request.form['tradeoff']
  
     if len(groupby) == 0:
         keyphraz = kp.extract_keyphrases_survey(
@@ -117,7 +119,8 @@ def return_keyphrases():
                                                min_words_length=min_words_length,
                                                min_keyword_frequency=min_keyword_frequency,
                                                groupby=groupby,
-                                               headers=headers)
+                                               headers=headers,
+                                               tradeoff=tradeoff)
          
     elif len(groupby) != 0:
         keyphraz = kp.extract_keyphrases_reviews(
@@ -128,9 +131,19 @@ def return_keyphrases():
                                                 min_words_length=min_words_length,
                                                 min_keyword_frequency=min_keyword_frequency,
                                                 groupby=groupby,
-                                                headers=headers)
-                 
+                                                headers=headers,
+                                                tradeoff=tradeoff)
+    
+    pd.DataFrame(keyphraz).to_csv('static/keyphrases.csv')
+    
     return json.dumps(keyphraz)
+
+
+
+@app.route('/export')
+def export():
+    return send_file('static/keyphrases.csv', attachment_filename='keyphrases.csv')
+
 
 
 def strtobool (val):

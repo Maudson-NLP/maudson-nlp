@@ -278,11 +278,15 @@ def stem_candidate_keywords(phrase_list):
     return final_list, phrase_list_stem, track_stem
 
 
-def calculate_word_metrics(phraseList):
+def calculate_word_metrics(phrase_list, tradeoff):
     word_frequency = {}
     word_degree = {}
     word_score = {}
-    for phrase in phraseList:
+    keyphrase_counts = {}
+
+    for phrase in phrase_list:
+        keyphrase_counts.setdefault(phrase, 0)
+        keyphrase_counts[phrase] += 1
         
         word_list = separate_words(phrase, 0)
         
@@ -296,35 +300,40 @@ def calculate_word_metrics(phraseList):
     for word in word_frequency.keys():
         word_score.setdefault(word, 0)
         if word_degree[word] != 0:
-            word_score[word] = word_frequency[word] / np.power(word_degree[word], 0.8)
+            word_score[word] = word_frequency[word] / np.power(word_degree[word], tradeoff)
         else:
             word_score[word] = word_frequency[word]
-            
-    return word_score
+    
+    keyphrase_stem_freq = {kp: float(sc)/len(phrase_list) for (kp, sc) in keyphrase_counts.iteritems()}
+    
+    return word_score, keyphrase_stem_freq
 
 
-def generate_candidate_keyword_scores(final_list, word_scores, track_stem):
-    keyword_candidates = {}
+def generate_candidate_keyphrase_scores(final_list, word_scores, keyphrase_stem_freq, track_stem):
+    keyphrase_candidates = {}
     for phrase in final_list:
         phrase_stem = track_stem[phrase]
-
-        keyword_candidates.setdefault(phrase, 0)
+        keyphrase_candidates.setdefault(phrase, 0)
         word_list = separate_words(phrase_stem, 0)
         candidate_score = 0
         for word in word_list:
             candidate_score += word_scores[word]
-        keyword_candidates[phrase] = float(candidate_score) / len(word_list)
-    return keyword_candidates
+        keyphrase_candidates[phrase] = float(candidate_score) / len(word_list)
+        
+    keyphrase_candidates = {kp: (sc, keyphrase_stem_freq[track_stem[kp]]) for (kp, sc) in keyphrase_candidates.iteritems()}
+    
+    return keyphrase_candidates
 
 
 class Rake(object):
-    def __init__(self, stop_words_path, min_char_length=1, min_words_length = 1, max_words_length=3, min_keyphrase_frequency=1):
+    def __init__(self, stop_words_path, min_char_length=1, min_words_length = 1, max_words_length=3, min_keyphrase_frequency=1, tradeoff=0.8):
         self.__stop_words_path = stop_words_path
         self.__stop_words_pattern = build_stop_word_regex(stop_words_path)
         self.__min_char_length = min_char_length
         self.__min_words_length = min_words_length
         self.__max_words_length = max_words_length
         self.__min_keyphrase_frequency = min_keyphrase_frequency
+        self.__tradeoff = tradeoff
 
     def run(self, text):
         sentence_list = split_sentences(text)
@@ -337,11 +346,11 @@ class Rake(object):
                 
         final_list, phrase_list_stem, track_stem = stem_candidate_keywords(phrase_list)
 
-        word_scores = calculate_word_metrics(phrase_list_stem)
+        word_scores, keyphrase_stem_freqs = calculate_word_metrics(phrase_list_stem, self.__tradeoff)
+        
+        keyphrase_candidates = generate_candidate_keyphrase_scores(final_list, word_scores, keyphrase_stem_freqs, track_stem)
 
-        keyword_candidates = generate_candidate_keyword_scores(final_list, word_scores, track_stem)
-
-        sorted_keywords = sorted(six.iteritems(keyword_candidates), key=operator.itemgetter(1), reverse=True)
+        sorted_keywords = sorted(six.iteritems(keyphrase_candidates), key=operator.itemgetter(1), reverse=True)
         
         return sorted_keywords
 

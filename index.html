@@ -140,7 +140,16 @@
                 <div class="keyphrase_params">
                     Minimum frequency for the keyphrase in the text:
                     <input id="min_keyword_frequency" type="number" value="2" />
-                </div>
+                </div><br>
+                <div class="keyphrase_params">
+                    Trade off between frequency and degree in the computation of word scores:
+                    <input id="tradeoff" type="number" value="0.8" /><br>
+
+                    0: score = frequency <br>
+                    1: score = frequency/degree<br>
+                    0 < p < 1: score = frequency/(degree^p) <br>
+                </div><br>
+
             </div>
             <br>
 
@@ -166,6 +175,8 @@
             formData.append('max_words_length', $("#max_words_length").val());
             formData.append('min_words_length', $("#min_words_length").val());
             formData.append('min_keyword_frequency', $("#min_keyword_frequency").val());
+            formData.append('tradeoff', $("#tradeoff").val());
+            formData.append('export', $("#export").prop("checked"));
             
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
@@ -199,12 +210,15 @@
         </script>
 
         <script id="keyphrases--template" type="text/x-jquery-tmpl">
+
+            <div>The first number is the score, the second one the frequency of the keyphrase</div><br>
+            <a href="/export" target="blank"><button>Export keyphrases</button></a><br><br>
             {{each(column,keyphrases) keyphraz}}
                 <div> Column name: ${column} </div> <br>
                     {{each(qst, lst) keyphrases}}
                         <div> ${qst} </div><br>
                         {{each(i, el) lst}}
-                        <div>${el[0]}: ${el[1]}</div>
+                        <div> ${el[0]}: ${el[1]} / ${el[2]} </div>
                             {{/each}}
                         <br>
                     {{/each}}
