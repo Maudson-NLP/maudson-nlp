@@ -10,7 +10,7 @@ import pandas as pd
 import keyword_extraction as kp
 import auth
 from rq import Queue
-from workers.worker import conn
+from worker import conn
 
 
 app = Flask(__name__, static_url_path='', static_folder='.')
