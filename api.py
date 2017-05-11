@@ -7,8 +7,15 @@ from summarizer import summarize
 import pandas as pd
 import keyword_extraction as kp
 import auth
+from rq import Queue
+from workers.worker import conn
+
 
 app = Flask(__name__, static_url_path='', static_folder='.')
+
+# Set up the worker Queue
+
+q = Queue(connection=conn)
 
 
 @app.route('/')
@@ -69,19 +76,21 @@ def summarize_route():
     extract_sibling_sents = strtobool(form_extract_sibling_sents)
     exclude_misspelled = strtobool(form_exclude_misspelled)
 
-    summary = summarize(
+    q.enqueue(
+        summarize,
         l=l,
         data=file.filename, columns=columns, group_by=form_group_by,
         tfidf=tfidf, ngram_range=ngram_range,
         use_svd=use_svd, k=k,
         scale_vectors=scale_vectors,
         use_noun_phrases=use_noun_phrases,
-        split_longer_sentences=split_longer_sentences, to_split_length=int(form_split_length),
+        split_longer_sentences=split_longer_sentences,
+        to_split_length=int(form_split_length),
         extract_sibling_sents=extract_sibling_sents,
         exclude_misspelled=exclude_misspelled
     )
 
-    return json.dumps(summary)
+    return json.dumps('summarize task successfully enqueued')
 
 
 
