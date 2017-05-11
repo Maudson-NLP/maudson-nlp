@@ -5,6 +5,7 @@ $(function(){
     });
 });
 
+var result_id;
 
 function doUpload(){
     $('#summarization-result').text('Summarizing...');
@@ -38,14 +39,7 @@ function doUpload(){
         if (xhr.readyState == XMLHttpRequest.DONE) {
 
             if (xhr.status === 200) {
-                var json = JSON.parse(xhr.responseText);
-                // Join the array of strings by simple spaces - todo
-                json.map(function(j){ j[1] = j[1].join(' '); return j });
-
-                var $compiled = $('#summarization--template').tmpl({
-                    summaries: json
-                });
-                $('#summarization-result').empty().append($compiled);
+                result_id = xhr.responseText;
             } else {
                 $('body').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);
@@ -57,4 +51,39 @@ function doUpload(){
     // Add any event handlers here...
     xhr.open('POST', '/summarize', true);
     xhr.send(formData);
+}
+
+
+setInterval(checkResults, 3000);
+
+function checkResults() {
+
+    var formData = new FormData();
+    formData.append('result_id', result_id);
+
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+
+            if (xhr.status === 200) {
+                var json = JSON.parse(xhr.responseText);
+                // Join the array of strings by simple spaces - todo
+                json.map(function(j){ j[1] = j[1].join(' '); return j });
+
+                var $compiled = $('#summarization--template').tmpl({
+                    summaries: json
+                });
+                $('#summarization-result').empty().append($compiled);
+
+            } else {
+                $('body').empty().append(xhr.responseText);
+                console.log("Error", xhr.statusText);
+            }
+        }
+    };
+
+    // Add any event handlers here...
+    xhr.open('POST', '/summary_result', true);
+    xhr.send(formData);
+
 }

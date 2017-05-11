@@ -1,4 +1,6 @@
 import os
+import json
+import uuid
 import nltk
 import json
 from flask import Flask
@@ -29,7 +31,23 @@ def rootbis():
     return app.send_static_file('index.html')
 
 
-@app.route('/summarize', methods=['GET', 'POST'])
+@app.route('/summary_result', methods=['GET'])
+def summarize_route():
+    path = './summary_results'
+    result_id = request.form['id']
+    results_bool = [result_id in x for x in os.listdir(path)]
+    if any(results_bool):
+
+        filename = path + result_id + '.json'
+        with open(filename) as data_file:
+            res = json.load(data_file)
+
+        return json.dumps(res)
+
+    return json.dumps(False)
+
+
+@app.route('/summarize', methods=['POST'])
 def summarize_route():
     """
     Flask route for summarization + noun phrases task
@@ -76,8 +94,11 @@ def summarize_route():
     extract_sibling_sents = strtobool(form_extract_sibling_sents)
     exclude_misspelled = strtobool(form_exclude_misspelled)
 
+    id = uuid.uuid4()
+
     q.enqueue(
         summarize,
+        id,
         l=l,
         data=file.filename, columns=columns, group_by=form_group_by,
         tfidf=tfidf, ngram_range=ngram_range,
@@ -90,7 +111,7 @@ def summarize_route():
         exclude_misspelled=exclude_misspelled
     )
 
-    return json.dumps('summarize task successfully enqueued')
+    return json.dumps(id)
 
 
 

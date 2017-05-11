@@ -4,6 +4,7 @@
 # Extractive Summarization by Maximizing Semantic Volume.
 # Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing: 1961-1966. September, 2015.
 
+import json
 import scipy
 import logging
 import sklearn
@@ -163,7 +164,8 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
-def summarize(data,
+def summarize(id,
+              data,
               columns=[],
               group_by=None,
               l=100,
@@ -255,4 +257,10 @@ def summarize(data,
         summaries.append(toappend)
 
     print("Columns summarized: {}".format(len(summaries)))
+
+    path = './summary_results'
+    filename = path + id + '.json'
+    with open(filename) as outfile:
+        json.dump(summaries, outfile)
+
     return summaries
