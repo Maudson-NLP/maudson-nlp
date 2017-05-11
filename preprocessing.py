@@ -2,7 +2,6 @@ import os
 import re
 import numpy as np
 import nltk
-from textblob import TextBlob
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize

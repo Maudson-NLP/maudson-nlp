@@ -4,6 +4,9 @@
 # Extractive Summarization by Maximizing Semantic Volume.
 # Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing: 1961-1966. September, 2015.
 
+import os
+import boto
+from boto.s3.key import Key
 import json
 import scipy
 import logging
@@ -17,6 +20,11 @@ from preprocessing import *
 
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+keyId = os.environ['S3_KEY']
+sKeyId= os.environ['S3_SECRET']
+conn = boto.connect_s3(keyId, sKeyId)
+
 
 DELIMITER = '\n' + '*' * 30 + ' '
 
@@ -164,21 +172,24 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
-def summarize(id,
-              data,
-              columns=[],
-              group_by=None,
-              l=100,
-              ngram_range=(2,3),
-              tfidf=False,
-              use_svd=False,
-              k=100,
-              scale_vectors=False,
-              use_noun_phrases=False,
-              extract_sibling_sents=False,
-              split_longer_sentences=False,
-              to_split_length=50,
-              exclude_misspelled=False):
+
+
+def summarize(
+    id,
+    data,
+    columns=[],
+    group_by=None,
+    l=100,
+    ngram_range=(2,3),
+    tfidf=False,
+    use_svd=False,
+    k=100,
+    scale_vectors=False,
+    use_noun_phrases=False,
+    extract_sibling_sents=False,
+    split_longer_sentences=False,
+    to_split_length=50,
+    exclude_misspelled=False):
     """
     Start summarization task on excel file with columns to summarize
     :param data: String - Name of excel file with columns to summarize
@@ -194,8 +205,17 @@ def summarize(id,
     :return: List of lists of summary sentences
     """
     if type(data) == str or type(data) == unicode:
-        data_dir = './uploaded_data/'
-        xl = pd.ExcelFile(data_dir + data)
+
+        bucketName = "clever-nlp"
+        bucket = conn.get_bucket(bucketName)
+
+        key = Key(bucket, data)
+
+        # Get the contents of the key into a file
+        key.get_contents_to_filename(data)
+
+
+        xl = pd.ExcelFile(data)
         df = xl.parse()
         df = df.dropna(axis=0, how='all') 
         df = df.dropna(axis=1, how='all') 
@@ -231,9 +251,11 @@ def summarize(id,
 
         if use_svd:
             vectors = vectors.asfptype()
-
+            print(vectors.shape)
+            print(min(vectors.shape))
+            print(k)
             if k >= min(vectors.shape):
-                print("k too small for vectors shape, lowering...")
+                print("k too large for vectors shape, lowering...")
                 k = min(vectors.shape) - 1
                 
             U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
@@ -258,9 +280,17 @@ def summarize(id,
 
     print("Columns summarized: {}".format(len(summaries)))
 
-    path = './summary_results'
-    filename = path + id + '.json'
-    with open(filename) as outfile:
+    # Write result to S3
+    path = './summary_results/'
+    filename = id + '.json'
+
+    with open(filename, 'w') as outfile:
         json.dump(summaries, outfile)
+
+    file = open(filename)
+    key.key = filename
+    # Upload the file
+    # result contains the size of the file uploaded
+    result = key.set_contents_from_file(file)
 
     return summaries

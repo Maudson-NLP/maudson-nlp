@@ -6,8 +6,11 @@ $(function(){
 });
 
 var result_id;
+var intervalId;
+var attempts;
 
 function doUpload(){
+    attempts = 0;
     $('#summarization-result').text('Summarizing...');
 
     var fileInput = document.getElementById('the-file');
@@ -40,26 +43,27 @@ function doUpload(){
 
             if (xhr.status === 200) {
                 result_id = xhr.responseText;
+                intervalId = setInterval(checkResults, 10000);
             } else {
                 $('body').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);
+                clearInterval(intervalId);
             }
 
         }
     };
 
-    // Add any event handlers here...
     xhr.open('POST', '/summarize', true);
     xhr.send(formData);
 }
 
 
-setInterval(checkResults, 3000);
 
 function checkResults() {
+    attempts += 1;
 
-    var formData = new FormData();
-    formData.append('result_id', result_id);
+    var fd = new FormData();
+    fd.append('result_id', result_id);
 
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -75,15 +79,23 @@ function checkResults() {
                 });
                 $('#summarization-result').empty().append($compiled);
 
+                clearInterval(intervalId);
+
+            } else if (xhr.status == 404) {
+                if (attempts >= 15) {
+                    $('#summarization-result').text('Memory utilization error. Please try again.');
+                } else {
+                    $('#summarization-result').text('Please wait...');
+                }
             } else {
                 $('body').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);
+                clearInterval(intervalId);
             }
         }
     };
 
-    // Add any event handlers here...
     xhr.open('POST', '/summary_result', true);
-    xhr.send(formData);
+    xhr.send(fd);
 
 }

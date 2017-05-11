@@ -1,50 +1,47 @@
 import os
-import json
 import uuid
 import nltk
 import json
+import tinys3
 from flask import Flask
-from flask import request, send_file
+from flask import request, send_file, abort
 from summarizer import summarize
 import pandas as pd
 import keyword_extraction as kp
-import auth
 from rq import Queue
 from worker import conn
 
 
 app = Flask(__name__, static_url_path='', static_folder='.')
-
 # Set up the worker Queue
-
 q = Queue(connection=conn)
+# AWS S3
+keyId = os.environ['S3_KEY']
+sKeyId= os.environ['S3_SECRET']
+conn = tinys3.Connection(keyId, sKeyId, tls=True)
 
 
 @app.route('/')
-# @auth.requires_auth
 def root():
     return app.send_static_file('index.html')
 
 @app.route('/index.html')
-# @auth.requires_auth
 def rootbis():
     return app.send_static_file('index.html')
 
 
-@app.route('/summary_result', methods=['GET'])
+@app.route('/summary_result', methods=['POST'])
 def summary_result():
-    path = './summary_results'
-    result_id = request.form['id']
-    results_bool = [result_id in x for x in os.listdir(path)]
-    if any(results_bool):
+    path = './summary_results/'
+    result_id = request.form['result_id']
 
-        filename = path + result_id + '.json'
-        with open(filename) as data_file:
-            res = json.load(data_file)
+    try:
+        c = conn.get(result_id + '.json', bucket='clever-nlp')
 
-        return json.dumps(res)
-
-    return json.dumps(False)
+        return json.dumps(json.loads(c._content))
+    except Exception as e:
+        print(e)
+        abort(404)
 
 
 @app.route('/summarize', methods=['POST'])
@@ -59,8 +56,13 @@ def summarize_route():
     file = request.files['file']
     if file:
         # filename = secure_filename(file.filename)
-        src = os.getcwd() + '/uploaded_data/'
-        file.save(os.path.join(src, file.filename))
+        src = os.getcwd()
+        file_full = os.path.join(src, file.filename)
+        file.save(file_full)
+
+        f = open(file_full, 'rb')
+        conn.upload(file.filename, f, 'clever-nlp')
+
 
     if request.form['columns']:
         columns = request.form['columns'].split('%')
@@ -94,11 +96,11 @@ def summarize_route():
     extract_sibling_sents = strtobool(form_extract_sibling_sents)
     exclude_misspelled = strtobool(form_exclude_misspelled)
 
-    id = uuid.uuid4()
+    summary_id = str(uuid.uuid4())
 
     q.enqueue(
         summarize,
-        id,
+        summary_id,
         l=l,
         data=file.filename, columns=columns, group_by=form_group_by,
         tfidf=tfidf, ngram_range=ngram_range,
@@ -111,7 +113,7 @@ def summarize_route():
         exclude_misspelled=exclude_misspelled
     )
 
-    return json.dumps(id)
+    return summary_id
 
 
 
