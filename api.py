@@ -32,7 +32,7 @@ def rootbis():
 
 
 @app.route('/summary_result', methods=['GET'])
-def summarize_route():
+def summary_result():
     path = './summary_results'
     result_id = request.form['id']
     results_bool = [result_id in x for x in os.listdir(path)]
