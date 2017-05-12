@@ -15,3 +15,4 @@ pyenchant==1.6.8
 rq==0.4.5
 redis==2.10.3
 tinys3==0.1.12
+newrelic
