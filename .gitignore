@@ -4,4 +4,3 @@ data
 data_source
 *.pyc
 summary_results/*
-uploaded_data/*
