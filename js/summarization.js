@@ -12,13 +12,18 @@ var attempts;
 function doUpload(){
     attempts = 0;
     $('#summarization-result').text('Summarizing...');
-
-    var fileInput = document.getElementById('the-file');
-    var file = fileInput.files[0];
     var formData = new FormData();
 
+    var textToSummarize = $('#textToSummarize').val();
+    if (!textToSummarize) {
+        var fileInput = document.getElementById('the-file');
+        var file = fileInput.files[0];
+        formData.append('file', file);
+    } else {
+        formData.append('textToSummarize', textToSummarize);
+    }
+
     colnames = $('#the-column-names').val();
-    formData.append('file', file);
     formData.append('columns', colnames);
     formData.append('l-value', $('#l-value').val());
     formData.append('ngram-min', $("#ngram-min").val());

@@ -50,18 +50,24 @@ def summarize_route():
     Flask route for summarization + noun phrases task
     :return: Json summary response
     """
-    if 'file' not in request.files:
-        raise Exception('no file provided')
-
-    file = request.files['file']
-    if file:
+    src = os.getcwd()
+    if len(request.files):
+        file = request.files['file']
         # filename = secure_filename(file.filename)
-        src = os.getcwd()
         file_full = os.path.join(src, file.filename)
         file.save(file_full)
 
         f = open(file_full, 'rb')
         conn.upload(file.filename, f, 'clever-nlp')
+        filename = file.filename
+    else:
+        textToSummarize = request.form['textToSummarize']
+        filename = textToSummarize[:20]
+        file_full = os.path.join(src, filename)
+        with open(file_full, 'wb') as f:
+            f.write(textToSummarize.encode('utf-8').strip())
+        f = open (file_full, 'rb')
+        conn.upload(filename, f, 'clever-nlp')
 
 
     if request.form['columns']:
@@ -102,7 +108,7 @@ def summarize_route():
         summarize,
         summary_id,
         l=l,
-        data=file.filename, columns=columns, group_by=form_group_by,
+        data=filename, columns=columns, group_by=form_group_by,
         tfidf=tfidf, ngram_range=ngram_range,
         use_svd=use_svd, k=k,
         scale_vectors=scale_vectors,

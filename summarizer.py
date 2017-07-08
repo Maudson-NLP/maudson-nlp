@@ -205,7 +205,6 @@ def summarize(
     :return: List of lists of summary sentences
     """
     if type(data) == str or type(data) == unicode:
-
         bucketName = "clever-nlp"
         bucket = conn.get_bucket(bucketName)
 
@@ -214,9 +213,15 @@ def summarize(
         # Get the contents of the key into a file
         key.get_contents_to_filename(data)
 
+        # Todo - messy...
+        # It is either an excel file or plain text
+        # Using a bad sep so that it's all just one cell
+        try:
+            xl = pd.ExcelFile(data)
+            df = xl.parse()
+        except:
+            df = pd.read_csv(data, sep='|', header=None, error_bad_lines=False, encoding='utf8')
 
-        xl = pd.ExcelFile(data)
-        df = xl.parse()
         df = df.dropna(axis=0, how='all') 
         df = df.dropna(axis=1, how='all') 
         df = df.dropna()

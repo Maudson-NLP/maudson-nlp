@@ -29,8 +29,16 @@
             <h3>Summarization</h3><br>
 
             <div id="summarization-upload">
-                Excel file
-                <input id="the-file" name="file" type="file" />
+
+                <div class="summarization-upload__input">
+                    Excel file
+                    <input id="the-file" name="file" type="file" />
+                </div>
+
+                <div class="summarization-upload__input">
+                    Or enter text
+                    <textarea id="textToSummarize"></textarea>
+                </div>
 
                 <div class="summarization-upload__input">
                     Max summary length:

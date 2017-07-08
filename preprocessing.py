@@ -7,6 +7,10 @@ from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 # Comment these two lines to run on Heroku
 # import enchant
 # from nltk.parse.stanford import StanfordParser
@@ -34,6 +38,8 @@ def make_sentences_from_dataframe(df, columns):
 	"""
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
+	# Make columns strings
+	df.columns = [str(col) for col in df.columns]
 	# Strip whitespace from column names
 	df.columns = [col.strip() for col in df.columns]
 
@@ -44,7 +50,7 @@ def make_sentences_from_dataframe(df, columns):
 	sentence_sets = []
 	for col in columns:
 		df[col] = df[col].str.replace(eos_regex, r'\1.')
-		text_blob = df[col].str.cat(sep=' ')
+		text_blob = df[col].str.cat(sep=' ').encode('utf-8').strip()
 		tokenized = tokenizer.tokenize(text_blob)
 		sentence_sets.append(tokenized)
 
