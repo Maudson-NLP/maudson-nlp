@@ -87,8 +87,8 @@ function checkResults() {
                 clearInterval(intervalId);
 
             } else if (xhr.status == 404) {
-                if (attempts >= 15) {
-                    $('#summarization-result').text('Memory utilization error. Please try again.');
+                if (attempts >= 25) {
+                    $('#summarization-result').text('Taking longer than expected - possible memory utilization error.');
                 } else {
                     $('#summarization-result').text('Please wait...');
                 }
