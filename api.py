@@ -32,9 +32,7 @@ def rootbis():
 
 @app.route('/summary_result', methods=['POST'])
 def summary_result():
-    path = './summary_results/'
     result_id = request.form['result_id']
-
     try:
         c = conn.get(result_id + '.json', bucket='clever-nlp')
 
@@ -58,7 +56,7 @@ def summarize_route():
         file.save(file_full)
 
         f = open(file_full, 'rb')
-        conn.upload(filename, f, 'clever-nlp')
+        conn.upload(filename, f, 'clever-nlp', public=False)
     else:
         textToSummarize = request.form['textToSummarize']
         filename = textToSummarize[:20]
@@ -66,7 +64,7 @@ def summarize_route():
         with open(file_full, 'wb') as f:
             f.write(textToSummarize.encode('utf-8').strip())
         f = open (file_full, 'rb')
-        conn.upload(filename, f, 'clever-nlp')
+        conn.upload(filename, f, 'clever-nlp', public=False)
 
 
     if request.form['columns']:
