@@ -53,13 +53,12 @@ def summarize_route():
     src = os.getcwd()
     if len(request.files):
         file = request.files['file']
-        # filename = secure_filename(file.filename)
-        file_full = os.path.join(src, file.filename)
+        filename = file.filename.replace('+', '')
+        file_full = os.path.join(src, filename)
         file.save(file_full)
 
         f = open(file_full, 'rb')
-        conn.upload(file.filename, f, 'clever-nlp')
-        filename = file.filename
+        conn.upload(filename, f, 'clever-nlp')
     else:
         textToSummarize = request.form['textToSummarize']
         filename = textToSummarize[:20]
