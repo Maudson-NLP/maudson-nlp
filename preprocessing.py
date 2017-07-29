@@ -49,7 +49,7 @@ def make_sentences_from_dataframe(df, columns):
 
 	sentence_sets = []
 	for col in columns:
-		df[col] = df[col].str.replace(eos_regex, r'\1.')
+		# df[col] = df[col].str.replace(eos_regex, r'\1.')
 		text_blob = df[col].str.cat(sep=' ').encode('utf-8').strip()
 		tokenized = tokenizer.tokenize(text_blob)
 		sentence_sets.append(tokenized)
