@@ -104,6 +104,7 @@ def summarize_route():
     q.enqueue(
         summarize,
         summary_id,
+        timeout=500,
         l=l,
         data=filename, columns=columns, group_by=form_group_by,
         tfidf=tfidf, ngram_range=ngram_range,

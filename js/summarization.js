@@ -87,8 +87,8 @@ function checkResults() {
                 clearInterval(intervalId);
 
             } else if (xhr.status == 404) {
-                if (attempts >= 25) {
-                    $('#summarization-result').text('Taking longer than expected - possible memory utilization error.');
+                if (attempts >= 50) {
+                    $('#summarization-result').text('Taking longer than expected - possible memory utilization error. Please try again later, with lower k value or smaller corpus.');
                 } else {
                     $('#summarization-result').text('Please wait...');
                 }
