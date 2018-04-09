@@ -21,9 +21,9 @@ from preprocessing import *
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-keyId = os.environ['S3_KEY']
-sKeyId= os.environ['S3_SECRET']
-conn = boto.connect_s3(keyId, sKeyId)
+# keyId = os.environ['S3_KEY']
+# sKeyId= os.environ['S3_SECRET']
+# conn = boto.connect_s3(keyId, sKeyId)
 
 
 DELIMITER = '\n' + '*' * 30 + ' '
@@ -205,13 +205,12 @@ def summarize(
     :return: List of lists of summary sentences
     """
     if type(data) == str or type(data) == unicode:
-        bucketName = "clever-nlp"
-        bucket = conn.get_bucket(bucketName)
-
-        key = Key(bucket, data)
+        # bucketName = "clever-nlp"
+        # bucket = conn.get_bucket(bucketName)
+        # key = Key(bucket, data)
 
         # Get the contents of the key into a file
-        key.get_contents_to_filename(data)
+        # key.get_contents_to_filename(data)
 
         # Todo - messy...
         # It is either an excel file or plain text
@@ -293,9 +292,9 @@ def summarize(
         json.dump(summaries, outfile)
 
     file = open(filename)
-    key.key = filename
+    # key.key = filename
     # Upload the file
     # result contains the size of the file uploaded
-    result = key.set_contents_from_file(file)
+    # result = key.set_contents_from_file(file)
 
     return summaries

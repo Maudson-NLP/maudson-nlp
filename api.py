@@ -2,23 +2,23 @@ import os
 import uuid
 import nltk
 import json
-import tinys3
+# import tinys3
 from flask import Flask
 from flask import request, send_file, abort
 from summarizer import summarize
 import pandas as pd
 import keyword_extraction as kp
-from rq import Queue
-from worker import conn
+# from rq import Queue
+# from worker import conn
 
 
 app = Flask(__name__, static_url_path='', static_folder='.')
 # Set up the worker Queue
-q = Queue(connection=conn)
-# AWS S3
-keyId = os.environ['S3_KEY']
-sKeyId= os.environ['S3_SECRET']
-conn = tinys3.Connection(keyId, sKeyId, tls=True)
+# q = Queue(connection=conn)
+#AWS S3
+# keyId = os.environ['S3_KEY']
+# sKeyId= os.environ['S3_SECRET']
+# conn = tinys3.Connection(keyId, sKeyId, tls=True)
 
 
 @app.route('/')
@@ -34,9 +34,9 @@ def rootbis():
 def summary_result():
     result_id = request.form['result_id']
     try:
-        c = conn.get(result_id + '.json', bucket='clever-nlp')
-
-        return json.dumps(json.loads(c._content))
+        # c = conn.get(result_id + '.json', bucket='clever-nlp')
+        c = open(result_id + '.json')
+        return json.dumps(json.loads(c.read()))
     except Exception as e:
         print(e)
         abort(404)
@@ -56,7 +56,7 @@ def summarize_route():
         file.save(file_full)
 
         f = open(file_full, 'rb')
-        conn.upload(filename, f, 'clever-nlp', public=False)
+        # conn.upload(filename, f, 'clever-nlp', public=False)
     else:
         textToSummarize = request.form['textToSummarize']
         filename = textToSummarize[:20]
@@ -64,7 +64,7 @@ def summarize_route():
         with open(file_full, 'wb') as f:
             f.write(textToSummarize.encode('utf-8').strip())
         f = open (file_full, 'rb')
-        conn.upload(filename, f, 'clever-nlp', public=False)
+        # conn.upload(filename, f, 'clever-nlp', public=False)
 
 
     if request.form['columns']:
@@ -101,14 +101,17 @@ def summarize_route():
 
     summary_id = str(uuid.uuid4())
 
-    q.enqueue(
-        summarize,
+    # q.enqueue(
+    summarize(
         summary_id,
-        timeout=500,
+        filename,
+        columns=columns,
+        group_by=form_group_by,
         l=l,
-        data=filename, columns=columns, group_by=form_group_by,
-        tfidf=tfidf, ngram_range=ngram_range,
-        use_svd=use_svd, k=k,
+        ngram_range=ngram_range,
+        tfidf=tfidf,
+        use_svd=use_svd,
+        k=k,
         scale_vectors=scale_vectors,
         use_noun_phrases=use_noun_phrases,
         split_longer_sentences=split_longer_sentences,

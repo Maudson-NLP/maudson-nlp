@@ -36,6 +36,8 @@ def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length
     '''
     rake_object = rake.Rake(stoppath, int(min_char_length), int(min_words_length), int(max_words_length), int(min_keyword_frequency), float(tradeoff))
     keyphrases = {qst[k]: rake_object.run(srv_concat[k]) for k in range(len(qst))}
+    print(keyphrases)
+
     if len(min(keyphrases.values())) == 0:
         for q in keyphrases.keys():
                 if len(keyphrases[q]) == 0:
