@@ -10,6 +10,7 @@ import os
 import boto
 from boto.s3.key import Key
 import json
+import xlrd
 import scipy
 import logging
 import sklearn
@@ -195,11 +196,13 @@ def get_summary_for_sentence_set(sentence_set, column, **args):
         vectors = vectors.asfptype()
     print(vectors.shape)
     print(min(vectors.shape))
-    print('k value; ' + args['k'])
+    print('k value; ' + str(args['k']))
     if args['k'] >= min(vectors.shape):
         print("k too large for vectors shape, lowering...")
     k = min(vectors.shape) - 1
-
+    if k == 0:
+        # Very repetitive sentences
+        return [column, ['Summary not possible'], []]
     U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
 
     print(DELIMITER + 'After SVD:')
@@ -251,11 +254,26 @@ def summarize(
     :param to_split_length: Integer - Length above which to split sentences
     :return: List of lists of summary sentences
     """
+    # Todo: use **kwargs
+    args = {
+        'split_longer_sentences': split_longer_sentences,
+        'exclude_misspelled': exclude_misspelled,
+        'extract_sibling_sents': extract_sibling_sents,
+        'ngram_range': ngram_range,
+        'scale_vectors': scale_vectors,
+        'use_svd': use_svd,
+        'columns': columns,
+        'use_noun_phrases': use_noun_phrases,
+        'tfidf': tfidf,
+        'k': k,
+        'l': l,
+    }
+
     if type(data) == str or type(data) == unicode:
+        # AWS S3 functionality
         # bucketName = "clever-nlp"
         # bucket = conn.get_bucket(bucketName)
         # key = Key(bucket, data)
-
         # Get the contents of the key into a file
         # key.get_contents_to_filename(data)
 
@@ -265,12 +283,15 @@ def summarize(
         try:
             xl = pd.ExcelFile(data)
             df = xl.parse()
-        except:
+        except xlrd.biffh.XLRDError as e:
+            print(e)
+            print(type(e))
+            print(e.message)
             df = pd.read_csv(data, header=None, error_bad_lines=False, encoding='utf8')
 
-        df = df.dropna(axis=0, how='all') 
-        df = df.dropna(axis=1, how='all') 
-        df = df.dropna()
+        # df = df.dropna(axis=0, how='all')
+        # df = df.dropna(axis=1, how='all')
+        # df = df.dropna()
     else:
         df = data
 
@@ -283,24 +304,14 @@ def summarize(
     summaries = []
     # Iterate over sentence groups for each column and summarize each
     for i, sentence_set in enumerate(sentence_sets):
-        args = {
-            'split_longer_sentences': split_longer_sentences,
-            'exclude_misspelled': exclude_misspelled,
-            'extract_sibling_sents': extract_sibling_sents,
-            'ngram_range': ngram_range,
-            'scale_vectors': scale_vectors,
-            'use_svd': use_svd,
-            'columns': columns,
-            'use_noun_phrases': use_noun_phrases,
-            'tfidf': tfidf,
-        }
         summary = get_summary_for_sentence_set(sentence_set, columns[i], **args)
         summaries.append(summary)
 
     print("Columns summarized: {}".format(len(summaries)))
 
+    output_folder = 'summary_results'
     filename = id + '.json'
-    with open(filename, 'w') as outfile:
+    with open(os.path.join(output_folder, filename), 'w') as outfile:
         json.dump(summaries, outfile)
 
     # Note: Uncomment for AWS S3 functionality

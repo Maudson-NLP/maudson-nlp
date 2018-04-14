@@ -35,7 +35,8 @@ def summary_result():
     result_id = request.form['result_id']
     try:
         # c = conn.get(result_id + '.json', bucket='clever-nlp')
-        c = open(result_id + '.json')
+        output_folder = 'summary_results'
+        c = open(os.path.join(output_folder, result_id) + '.json')
         return json.dumps(json.loads(c.read()))
     except Exception as e:
         print(e)
@@ -48,22 +49,23 @@ def summarize_route():
     Flask route for summarization + noun phrases task
     :return: Json summary response
     """
-    src = os.getcwd()
+    upload_folder = os.path.join(os.getcwd(), 'uploaded_data')
     if len(request.files):
+        # If we have an attached file
         file = request.files['file']
         filename = file.filename.replace('+', '')
-        file_full = os.path.join(src, filename)
+        file_full = os.path.join(upload_folder, filename)
         file.save(file_full)
-
-        f = open(file_full, 'rb')
+        # f = open(file_full, 'rb')
         # conn.upload(filename, f, 'clever-nlp', public=False)
     else:
+        # If user uploaded raw text
         textToSummarize = request.form['textToSummarize']
         filename = textToSummarize[:20]
-        file_full = os.path.join(src, filename)
+        file_full = os.path.join(upload_folder, filename)
         with open(file_full, 'wb') as f:
             f.write(textToSummarize.encode('utf-8').strip())
-        f = open (file_full, 'rb')
+        # f = open (file_full, 'rb')
         # conn.upload(filename, f, 'clever-nlp', public=False)
 
 

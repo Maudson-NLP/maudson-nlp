@@ -48,7 +48,7 @@ function doUpload(){
 
             if (xhr.status === 200) {
                 result_id = xhr.responseText;
-                intervalId = setInterval(checkResults, 10000);
+                intervalId = setInterval(checkResults, 5000);
             } else {
                 $('body').empty().append(xhr.responseText);
                 console.log("Error", xhr.statusText);

@@ -225,7 +225,8 @@ def vectorize(sentences, ngram_range=(1,1), tfidf=False):
 	transformed = vectorizer.transform(sentences)
 	print(DELIMITER + 'After vectorization (ngram_range: {}):'.format(ngram_range))
 	print(transformed.shape)
-	print(transformed[:2])
+	if min(transformed.shape) > 2:
+		print(transformed[:2])
 
 	return transformed
 
