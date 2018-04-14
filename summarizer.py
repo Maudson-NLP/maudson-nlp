@@ -54,7 +54,7 @@ def ortho_proj_vec(vectors, B):
 
 
 def compute_mean_vector(vectors):
-    c = np.mean(vectors, axis=0)
+    c = vectors.mean(axis=0)
     return csr_matrix(c)
 
 
