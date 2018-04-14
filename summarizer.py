@@ -269,6 +269,8 @@ def summarize(
         'l': l,
     }
 
+    upload_folder = os.path.join(os.getcwd(), 'uploaded_data')
+
     if type(data) == str or type(data) == unicode:
         # AWS S3 functionality
         # bucketName = "clever-nlp"
@@ -281,13 +283,13 @@ def summarize(
         # It is either an excel file or plain text
         # Using a bad sep so that it's all just one cell
         try:
-            xl = pd.ExcelFile(data)
+            xl = pd.ExcelFile(os.path.join(upload_folder, data))
             df = xl.parse()
         except xlrd.biffh.XLRDError as e:
             print(e)
             print(type(e))
             print(e.message)
-            df = pd.read_csv(data, header=None, error_bad_lines=False, encoding='utf8')
+            df = pd.read_csv(os.path.join(upload_folder, data), header=None, error_bad_lines=False, encoding='utf8')
 
         # df = df.dropna(axis=0, how='all')
         # df = df.dropna(axis=1, how='all')
