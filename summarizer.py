@@ -1,8 +1,10 @@
+###################################################
 # Implementation of Semantic Volume Maximization
 # as specified by:
 # Yogatama, Dani et al. 2015.
 # Extractive Summarization by Maximizing Semantic Volume.
 # Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing: 1961-1966. September, 2015.
+###################################################
 
 import os
 import boto
@@ -18,15 +20,15 @@ from sklearn.preprocessing import Normalizer
 from scipy.sparse import csr_matrix
 from preprocessing import *
 
-
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+# Uncomment for AWS S3 functionality
 # keyId = os.environ['S3_KEY']
 # sKeyId= os.environ['S3_SECRET']
 # conn = boto.connect_s3(keyId, sKeyId)
 
-
 DELIMITER = '\n' + '*' * 30 + ' '
+
 
 
 def ortho_proj_vec(vectors, B):
@@ -65,13 +67,14 @@ def compute_primary_basis_vector(vectors, sentences, d, L):
     :param L: Max length of word count in sentence
     :return: Index of vector with largest distance in vectors
     """
-    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d) # should be proj_b0^ui ?
+    # Todo: should be proj_b0^ui ?
+    dists = sklearn.metrics.pairwise.pairwise_distances(vectors, d)
     p = np.argmax(dists)
 
     # Skip vectors that overflow the word limit
     total_length = len(sentences[p].split())
-    # Include length of first vector if we aren't dealing with `d` as the mean vector. Todo
 
+    # Todo: Include length of first vector if we aren't dealing with `d` as the mean vector
     while total_length > L:
         print("Basis vector too long, recalculating...")
         vectors[p] = np.zeros(vectors[p].shape)
@@ -172,6 +175,50 @@ def sentence_add_loop(vectors, sentences, S, B, L):
     return [str(e) for e in S]
 
 
+def get_summary_for_sentence_set(sentence_set, column, **args):
+    if args['split_longer_sentences']:
+        sentence_set = split_long_sentences(sentence_set, args['to_split_length'])
+    if args['exclude_misspelled']:
+        sentence_set = do_exclude_misspelled(sentence_set)
+    if args['extract_sibling_sents']:
+        sentence_set = extract_sibling_sentences(sentence_set)
+
+    vectors = do_lemmatization(sentence_set)
+    vectors = remove_stopword_bigrams(vectors)
+    vectors = vectorize(vectors, ngram_range=args['ngram_range'], tfidf=args['tfidf'])
+
+    if args['scale_vectors']:
+        normalizer = Normalizer()
+    vectors = normalizer.fit_transform(vectors)
+
+    if args['use_svd']:
+        vectors = vectors.asfptype()
+    print(vectors.shape)
+    print(min(vectors.shape))
+    print('k value; ' + args['k'])
+    if args['k'] >= min(vectors.shape):
+        print("k too large for vectors shape, lowering...")
+    k = min(vectors.shape) - 1
+
+    U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
+
+    print(DELIMITER + 'After SVD:')
+    print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
+    vectors = csr_matrix(U)
+
+    print(DELIMITER + 'Run Algorithm:')
+    summary = sem_vol_max(sentence_set, vectors, args['l'])
+
+    print(DELIMITER + 'Result:')
+    print(summary)
+
+    result = [column, summary, []]
+
+    if args['use_noun_phrases']:
+        # Todo - Use struct for results
+        result[2] = extract_noun_phrases(sentence_set)
+
+    return result
 
 
 def summarize(
@@ -219,7 +266,7 @@ def summarize(
             xl = pd.ExcelFile(data)
             df = xl.parse()
         except:
-            df = pd.read_csv(data, sep='|', header=None, error_bad_lines=False, encoding='utf8')
+            df = pd.read_csv(data, header=None, error_bad_lines=False, encoding='utf8')
 
         df = df.dropna(axis=0, how='all') 
         df = df.dropna(axis=1, how='all') 
@@ -236,62 +283,30 @@ def summarize(
     summaries = []
     # Iterate over sentence groups for each column and summarize each
     for i, sentence_set in enumerate(sentence_sets):
-
-        if split_longer_sentences:
-            sentence_set = split_long_sentences(sentence_set, to_split_length)
-        if exclude_misspelled:
-            sentence_set = do_exclude_misspelled(sentence_set)
-        if extract_sibling_sents:
-            sentence_set = extract_sibling_sentences(sentence_set)
-
-        vectors = do_lemmatization(sentence_set)
-        vectors = remove_stopword_bigrams(vectors)
-
-        vectors = vectorize(vectors, ngram_range=ngram_range, tfidf=tfidf)
-
-        if scale_vectors:
-            normalizer = Normalizer()
-            vectors = normalizer.fit_transform(vectors)
-
-        if use_svd:
-            vectors = vectors.asfptype()
-            print(vectors.shape)
-            print(min(vectors.shape))
-            print(k)
-            if k >= min(vectors.shape):
-                print("k too large for vectors shape, lowering...")
-                k = min(vectors.shape) - 1
-                
-            U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
-
-            print(DELIMITER + 'After SVD:')
-            print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
-            vectors = csr_matrix(U)
-
-        print(DELIMITER + 'Run Algorithm:')
-        summary = sem_vol_max(sentence_set, vectors, l)
-
-        print(DELIMITER + 'Result:')
-        print(summary)
-
-        toappend = [columns[i], summary, []]
-
-        # todo - ugly
-        if use_noun_phrases:
-            toappend[2] = extract_noun_phrases(sentence_set)
-
-        summaries.append(toappend)
+        args = {
+            'split_longer_sentences': split_longer_sentences,
+            'exclude_misspelled': exclude_misspelled,
+            'extract_sibling_sents': extract_sibling_sents,
+            'ngram_range': ngram_range,
+            'scale_vectors': scale_vectors,
+            'use_svd': use_svd,
+            'columns': columns,
+            'use_noun_phrases': use_noun_phrases,
+            'tfidf': tfidf,
+        }
+        summary = get_summary_for_sentence_set(sentence_set, columns[i], **args)
+        summaries.append(summary)
 
     print("Columns summarized: {}".format(len(summaries)))
 
-    # Write result to S3
-    path = './summary_results/'
     filename = id + '.json'
-
     with open(filename, 'w') as outfile:
         json.dump(summaries, outfile)
 
-    file = open(filename)
+    # Note: Uncomment for AWS S3 functionality
+    # Write result to S3
+    #path = './summary_results/'
+    # file = open(filename)
     # key.key = filename
     # Upload the file
     # result contains the size of the file uploaded
