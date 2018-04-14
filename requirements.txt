@@ -1,4 +1,10 @@
-Flask==0.11.1
+﻿Flask==0.11.1
+xlrd==1.0.0
+pyenchant==1.6.8
+rq==0.4.5
+redis==2.10.3
+tinys3==0.1.12
+newrelic
 gensim==0.13.4.1
 nltk==3.2.2
 numpy==1.12.0
@@ -9,10 +15,4 @@ spacy==1.6.0
 textacy==0.3.3
 textblob==0.11.1
 ftfy==4.4.1
-cffi==1.2.1
-xlrd==1.0.0
-pyenchant==1.6.8
-rq==0.4.5
-redis==2.10.3
-tinys3==0.1.12
-newrelic
+# cffi==1.2.1
