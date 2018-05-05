@@ -7,8 +7,8 @@
 ###################################################
 
 import os
-import boto
-from boto.s3.key import Key
+# import boto
+# from boto.s3.key import Key
 import json
 import xlrd
 import scipy
