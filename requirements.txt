@@ -9,7 +9,9 @@ gensim==0.13.4.1
 nltk==3.2.2
 numpy==1.13.0
 pandas==0.19.2
-scipy==0.18.1
+# Should instead be installed from 
+# https://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
+# scipy==0.18.1
 sklearn==0.19.1
 spacy==1.6.0
 textacy==0.3.3
