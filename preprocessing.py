@@ -38,6 +38,11 @@ def make_sentences_from_dataframe(df, columns):
 	"""
 	tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
+	# Remove non-UTF strings
+	pattern = re.compile('([^\s\w]|_)+')
+	columns = [pattern.sub('', str(col)) for col in columns]
+	df.columns = [pattern.sub('', str(col)) for col in df.columns]
+
 	# Make columns strings
 	df.columns = [str(col) for col in df.columns]
 	# Strip whitespace from column names
