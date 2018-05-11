@@ -190,24 +190,25 @@ def get_summary_for_sentence_set(sentence_set, column, **args):
 
     if args['scale_vectors']:
         normalizer = Normalizer()
-    vectors = normalizer.fit_transform(vectors)
+        vectors = normalizer.fit_transform(vectors)
 
     if args['use_svd']:
         vectors = vectors.asfptype()
+
     print(vectors.shape)
-    print(min(vectors.shape))
     print('k value; ' + str(args['k']))
     if args['k'] >= min(vectors.shape):
         print("k too large for vectors shape, lowering...")
-    k = min(vectors.shape) - 1
-    if k == 0:
+        args['k'] = min(vectors.shape) - 1
+    if args['k'] == 0:
         # Very repetitive sentences
         return [column, ['Summary not possible'], []]
-    U, s, V = scipy.sparse.linalg.svds(vectors, k=k)
 
-    print(DELIMITER + 'After SVD:')
-    print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
-    vectors = csr_matrix(U)
+    if args['use_svd']:
+        U, s, V = scipy.sparse.linalg.svds(vectors, k=args['k'])
+        print(DELIMITER + 'After SVD:')
+        print("U: {}, s: {}, V: {}".format(U.shape, s.shape, V.shape))
+        vectors = csr_matrix(U)
 
     print(DELIMITER + 'Run Algorithm:')
     summary = sem_vol_max(sentence_set, vectors, args['l'])
