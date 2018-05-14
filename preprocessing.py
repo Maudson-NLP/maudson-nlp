@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import sys
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('UTF8')
 
 # Comment these two lines to run on Heroku
 # import enchant
