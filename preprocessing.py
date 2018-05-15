@@ -183,7 +183,7 @@ def do_lemmatization(sentences):
 
 		lemma_sentence = []
 		for w in words:
-			lemma_sentence.append(wlem.lemmatize(w))
+			lemma_sentence.append(wlem.lemmatize(w.decode('unicode_escape').encode('utf-8')))
 		lemma_sentences.append(' '.join(lemma_sentence))
 
 	print(DELIMITER + 'After lemmatization:')
