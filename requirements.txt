@@ -1,4 +1,4 @@
-flask==0.11.1
+﻿flask==0.11.1
 xlrd==1.0.0
 #pyenchant==1.6.8
 #rq==0.4.5
@@ -12,7 +12,7 @@ pandas==0.19.2
 # Should instead be installed from 
 # https://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
 # scipy==0.18.1
-sklearn==0.19.1
+scikit-learn==0.19.1
 spacy==1.6.0
 textacy==0.3.3
 textblob==0.11.1
