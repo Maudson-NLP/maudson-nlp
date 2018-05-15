@@ -179,7 +179,7 @@ def do_lemmatization(sentences):
 
 	lemma_sentences = []
 	for sentence in sentences:
-		words = word_tokenize(sentence)
+		words = word_tokenize(sentence.encode('utf-8'))
 
 		lemma_sentence = []
 		for w in words:
