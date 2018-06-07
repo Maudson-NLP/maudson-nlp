@@ -8,18 +8,9 @@ from flask import request, send_file, abort
 from summarizer import summarize
 import pandas as pd
 import keyword_extraction as kp
-# from rq import Queue
-# from worker import conn
 
 
 app = Flask(__name__, static_url_path='', static_folder='.')
-# Set up the worker Queue
-# q = Queue(connection=conn)
-#AWS S3
-# keyId = os.environ['S3_KEY']
-# sKeyId= os.environ['S3_SECRET']
-# conn = tinys3.Connection(keyId, sKeyId, tls=True)
-
 
 @app.route('/')
 def root():
@@ -34,7 +25,6 @@ def rootbis():
 def summary_result():
     result_id = request.form['result_id']
     try:
-        # c = conn.get(result_id + '.json', bucket='clever-nlp')
         output_folder = 'summary_results'
         c = open(os.path.join(output_folder, result_id) + '.json')
         return json.dumps(json.loads(c.read()))
@@ -56,8 +46,6 @@ def summarize_route():
         filename = file.filename.replace('+', '')
         file_full = os.path.join(upload_folder, filename)
         file.save(file_full)
-        # f = open(file_full, 'rb')
-        # conn.upload(filename, f, 'clever-nlp', public=False)
     else:
         # If user uploaded raw text
         textToSummarize = request.form['textToSummarize']
@@ -65,8 +53,6 @@ def summarize_route():
         file_full = os.path.join(upload_folder, filename)
         with open(file_full, 'wb') as f:
             f.write(textToSummarize.encode('utf-8').strip())
-        # f = open (file_full, 'rb')
-        # conn.upload(filename, f, 'clever-nlp', public=False)
 
 
     if request.form['columns']:

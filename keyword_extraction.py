@@ -41,7 +41,7 @@ def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length
     if len(min(keyphrases.values())) == 0:
         for q in keyphrases.keys():
                 if len(keyphrases[q]) == 0:
-                    keyphrases[q] = [('Impossible to extract keywords',0.0)]
+                    keyphrases[q] = [('Impossible to extract keywords', [0, 0])]
     
     key_scores = {key:[ct[0] for (kw, ct) in keyphrases[key]] for key in keyphrases.keys()}
     scaler_dic = {key:{'min':np.min(key_scores[key]),'max':np.max(key_scores[key]), 'delta': np.max(key_scores[key])-np.min(key_scores[key])} for key in keyphrases.keys()}
