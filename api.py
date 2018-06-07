@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import os
 import uuid
 import nltk
 import json
-# import tinys3
 from flask import Flask
 from flask import request, send_file, abort
 from summarizer import summarize

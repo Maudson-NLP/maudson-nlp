@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 import numpy as np
@@ -55,6 +57,7 @@ def make_sentences_from_dataframe(df, columns):
 	sentence_sets = []
 	for col in columns:
 		# df[col] = df[col].str.replace(eos_regex, r'\1.')
+		# Todo: might need to be doing .decode('utf-8') instead of .encode()
 		text_blob = df[col].str.cat(sep=' ').decode('unicode_escape').encode('utf-8').strip()
 		tokenized = tokenizer.tokenize(text_blob)
 		sentence_sets.append(tokenized)
@@ -77,6 +80,7 @@ def make_sentences_by_group(df, group_by_col, column):
 	unique_groups = df[group_by_col].unique()
 	for group in unique_groups:
 		df[column] = df[column].str.replace(eos_regex, r'\1.')
+		# Todo: might need to be doing .decode('utf-8') instead of .encode()
 		sentences = df[df[group_by_col] == group][column].str.cat(sep=' ').decode('unicode_escape').encode('utf-8')
 		tokenized = tokenizer.tokenize(sentences)
 		sentence_sets.append(tokenized)
