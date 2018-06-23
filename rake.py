@@ -153,7 +153,6 @@ def spell_check(sentence_list):
 
 
 def handle_neg(candidate):
-    
     candidate = candidate.lower()
     neg_items = ['not a lot of', 'not', 'no', 'non', 'not', 'nor', 'free of', 'not too', 'not to', 'clear of', 'free of']
     for neg_item in neg_items:
@@ -246,7 +245,6 @@ def handle_neg_list(sentence_list):
 
 
 def stem_candidate_keywords(phrase_list):
-    
     stemmer = stem.PorterStemmer()
     
     #Stem phrase_list and track

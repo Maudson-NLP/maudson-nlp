@@ -38,12 +38,13 @@ def extract_keyphrases_survey(filename, nb_kp, min_char_length, max_words_length
     '''
     rake_object = rake.Rake(stoppath, int(min_char_length), int(min_words_length), int(max_words_length), int(min_keyword_frequency), float(tradeoff))
     keyphrases = {qst[k]: rake_object.run(srv_concat[k]) for k in range(len(qst))}
+
+    print('Found keyphrases:')
     print(keyphrases)
 
-    if len(min(keyphrases.values())) == 0:
-        for q in keyphrases.keys():
-                if len(keyphrases[q]) == 0:
-                    keyphrases[q] = [('Impossible to extract keywords', [0, 0])]
+    for q in keyphrases.keys():
+            if len(keyphrases[q]) == 0:
+                keyphrases[q] = [('Impossible to extract keywords', [0, 0])]
     
     key_scores = {key:[ct[0] for (kw, ct) in keyphrases[key]] for key in keyphrases.keys()}
     scaler_dic = {key:{'min':np.min(key_scores[key]),'max':np.max(key_scores[key]), 'delta': np.max(key_scores[key])-np.min(key_scores[key])} for key in keyphrases.keys()}
@@ -81,14 +82,12 @@ def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_lengt
         cols = [q.strip('\n') for q in data.columns]
         data.columns = cols
         
-    else:   
+    else:
         columns_to_extract = headers.split('%')
-        columns_to_keep = [groupby]+columns_to_extract
+        columns_to_keep = [groupby] + columns_to_extract
         cols = [q.strip('\n') for q in data.columns]
         data.columns = cols
-    
-    
-        
+
     data = data[columns_to_keep]
     
     product_reviews = {col: {prod:'' for prod in set(data[groupby])} for col in columns_to_extract}
@@ -98,20 +97,34 @@ def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_lengt
     for col in columns_to_extract:
         #Concatenate per groupby
         for k in range(len(data)):
-            product_reviews[col][data[groupby][k]]+= '. '+str(data[col][k])
+            product_reviews[col][data[groupby][k]] += '. ' + str(data[col][k])
     
         rake_object = rake.Rake(stoppath, int(min_char_length), int(min_words_length), int(max_words_length), int(min_keyword_frequency), float(tradeoff))
         keyphrases = {product: rake_object.run(review) for (product, review) in product_reviews[col].iteritems()}
-                
-        if len(min(keyphrases.values())) == 0:
-            for prod_id in keyphrases.keys():
-                if len(keyphrases[prod_id]) == 0:
-                    keyphrases[prod_id] = [('Impossible to extract keywords',[0, 0])]
-          
-        key_scores = {key:[ct[0] for (kw, ct) in keyphrases[key]] for key in keyphrases.keys()}
-        scaler_dic = {key:{'min':np.min(key_scores[key]),'max':np.max(key_scores[key]), 'delta': np.max(key_scores[key])-np.min(key_scores[key])} for key in keyphrases.keys()}
-        
-        keyphrases = {str(prod_id):[(kw, "%.4f" % ((ct[0]-scaler_dic[prod_id]['min'])/scaler_dic[prod_id]['delta']), "%.5f" % ct[1]) for (kw,ct) in lst] for (prod_id,lst) in keyphrases.iteritems()}    
+
+        print('Found keyphrases:')
+        print(keyphrases)
+
+        for prod_id in keyphrases.keys():
+            if len(keyphrases[prod_id]) == 0:
+                keyphrases[prod_id] = [('Impossible to extract keywords', [0,0])]
+
+        key_scores = { key: [ct[0] for (kw, ct) in keyphrases[key]] for key in keyphrases.keys() }
+        scaler_dic = {
+            key: {
+                'min': np.min(key_scores[key]),
+                'max': np.max(key_scores[key]),
+                'delta': np.max(key_scores[key]) - np.min(key_scores[key])
+            } for key in keyphrases.keys()
+        }
+
+        keyphrases = {
+            str(prod_id): [
+                (kw, "%.4f" % ((ct[0] - scaler_dic[prod_id]['min']) / scaler_dic[prod_id]['delta'] + 1e-6), "%.5f" % ct[1])
+                    for (kw,ct) in lst
+                ]
+            for (prod_id,lst) in keyphrases.iteritems()
+        }
         
         if nb_kp > 0.99:
             nb_kp = int(nb_kp)
@@ -122,8 +135,5 @@ def extract_keyphrases_reviews(filename, nb_kp, min_char_length, max_words_lengt
         keyphraz[col] = keyphrases
     
     keyphraz = collections.OrderedDict([(col, keyphraz[col]) for col in columns_to_extract])
-    
 
     return keyphraz
-
-
